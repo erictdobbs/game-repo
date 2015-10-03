@@ -8,11 +8,6 @@ var mainLoop = { interval: null, milliseconds: 20 };
 
 function startGame() {
     initGraphicSheets();
-    initFrameSets();
-    //initTilesets();
-    //initTileCategories();
-    //firstMap();
-    //onGameStart();
     var gameView = document.getElementById('gameView');
 
     gameView.onmousedown = function (e) {
@@ -70,6 +65,7 @@ function startGame() {
 function pulse() {
     testDraw();
     cycleMouseInfo();
+
 }
 
 function cycleMouseInfo() {
@@ -78,20 +74,51 @@ function cycleMouseInfo() {
     mouseInfo.clicked = false;
 }
 
+
+
+
+function SpriteBase() {
+    this.x = 0;
+    this.y = 0;
+    this.scale = 1;
+    this.rotate = 0;
+    //this.currentFrame = new Frame(graphicSheets.testImage, 0);
+    this.draw = function () {
+        this.currentFrame.draw(this.x, this.y, this.scale, this.rotation);
+    }
+}
+
+function TestEnemy() {
+    this.currentFrame = new Frame(graphicSheets.testImage, 0);
+}
+TestEnemy.prototype = new SpriteBase();
+TestEnemy.prototype.constructor = TestEnemy;
+
+
+
+
+var totalFrames = 0;
+var totalTime = 0;
+
 var test = 0;
 function testDraw() {
     gameViewContext.clearRect(0, 0, viewWidth, viewHeight);
     gameViewContext.fillStyle = "white";
     gameViewContext.fillRect(Math.random() * viewWidth, Math.random() * viewHeight, 5, 5);
 
-    var imageFile = document.getElementById("testImage");
+    var t = new Date();
 
-    gameViewContext.translate(228, 228);
-    gameViewContext.rotate(test);
-    gameViewContext.drawImage(imageFile, 0, 0, 8, 8, -128, -128, 256, 256);
-    gameViewContext.rotate(-test);
-    gameViewContext.translate(-228, -228);
-    test += 0.06
+    for (var i = 0; i < 5; i++) {
+        for (var j = 0; j < 3; j++) {
+            var enemy = new TestEnemy();
+            enemy.x = i*150;
+            enemy.y = j*150;
+            enemy.scale = 16;
+            enemy.rotation = ((i+j) % 2 == 0 ? test : -test); 
+            enemy.draw();
+        }
+    }
+    test += Math.PI / 24;
 }
 
 Array.prototype.rand = function () {
@@ -134,71 +161,21 @@ function Frame(graphicSheet, cellIndex) {
     this.imageSource = graphicSheet.image;
     this.cellIndex = cellIndex;
 }
-Frame.prototype.draw = function (ctx, x, y) {
+Frame.prototype.draw = function (x, y, scale, rotation) {
     if (this.imageSource == null) return;
-    var imageX = (this.cellIndex % this.graphicSheet.columns) * this.graphicSheet.cellWidth;
-    var imageY = Math.floor(this.cellIndex / this.graphicSheet.columns) * this.graphicSheet.cellHeight;
+    if (scale === undefined) scale = 1;
+    if (rotation === undefined) rotation = 0;
+
     var frameWidth = this.graphicSheet.cellWidth;
     var frameHeight = this.graphicSheet.cellHeight;
-    ctx.drawImage(this.imageSource, imageX, imageY, frameWidth, frameHeight, x, y, frameWidth, frameHeight);
-};
-
-
-//
-// XFrames
-// Represent tiles of image data with predefined 
-// rotation, translation, and scaling
-//
-
-function XFrame(m11, m12, m21, m22, dx, dy, graphicSheet, cellIndex) {
-    this.m11 = m11; // Horizontal scaling
-    this.m12 = m12; // Vertical shearing
-    this.m21 = m21; // Horizontal shearing
-    this.m22 = m22; // Vertical scaling
-    this.dx = dx;   // Horizontal offset
-    this.dy = dy;   // Vertical offset
-    this.graphicSheet = graphicSheet;
-    this.imageSource = graphicSheet.image;
-    this.cellIndex = cellIndex;
-}
-XFrame.prototype.draw = function (ctx, x, y) {
-    ctx.save();
-    ctx.transform(this.m11, this.m12, this.m21, this.m22, this.dx + x, this.dy + y);
     var imageX = (this.cellIndex % this.graphicSheet.columns) * this.graphicSheet.cellWidth;
     var imageY = Math.floor(this.cellIndex / this.graphicSheet.columns) * this.graphicSheet.cellHeight;
-    var frameWidth = this.graphicSheet.cellWidth;
-    var frameHeight = this.graphicSheet.cellHeight;
-    ctx.drawImage(this.imageSource, imageX, imageY, frameWidth, frameHeight, 0, 0, frameWidth, frameHeight);
-    ctx.restore();
+
+    gameViewContext.save();
+    gameViewContext.transform(1, 0, 0, 1, x, y);
+    gameViewContext.rotate(-rotation);
+    gameViewContext.drawImage(this.imageSource, imageX, imageY, frameWidth, frameHeight,
+        -frameWidth * scale / 2, -frameHeight * scale / 2, frameWidth * scale, frameHeight * scale);
+
+    gameViewContext.restore();
 };
-
-
-// 
-// Framesets
-// Represent collections of Frames
-//
-
-var frameSets = new Object();
-function FrameSet(name, frames) {
-    this.name = name;
-    this.frames = frames;
-}
-function initFrameSets() {
-    for (graphicSheetName in graphicSheets) {
-        var frames = [];
-        var graphicSheet = graphicSheets[graphicSheetName];
-        for (var i = 0; i < graphicSheet.columns * graphicSheet.rows; i++) 
-            frames.push(new Frame(graphicSheet, i));
-        frameSets[graphicSheetName] = new FrameSet(graphicSheetName, frames);
-    }
-}
-
-
-//
-// Sprite Definitions
-// Represents the logic and rules for moveable game objects
-//
-
-var spriteDefinitions = new Object();
-
-
