@@ -14,6 +14,49 @@ function SpriteBase(x, y, scale, rotation) {
     }
 }
 
+
+
+function PlayerShip(x, y, scale, rotation) {
+    SpriteBase.call(this, x, y, scale, rotation);
+    this.currentFrame = new Frame(graphicSheets.PlayerShip, 0);
+    this.weaponCooldown = 0;
+    this.executeRules = function () {
+        if (this.weaponCooldown > 0) this.weaponCooldown -= 1;
+
+        if (keyboardState.isKeyPressed(keyboardState.key.A) && this.x > 0) this.x -= 5;
+        if (keyboardState.isKeyPressed(keyboardState.key.D) && this.x < viewWidth) this.x += 5;
+        if (keyboardState.isKeyPressed(keyboardState.key.S) && this.y < viewHeight) this.y += 5;
+        if (keyboardState.isKeyPressed(keyboardState.key.W) && this.y > 0) this.y -= 5;
+        if (keyboardState.isKeyPressed(keyboardState.key.Space) && this.weaponCooldown == 0) {
+            this.weaponCooldown = 30;
+            sprites.push(new PlayerMissile(this.x, this.y - 32, 4));
+        }
+    };
+}
+PlayerShip.prototype = new SpriteBase();
+PlayerShip.prototype.constructor = PlayerShip;
+
+
+
+
+
+
+function PlayerMissile(x, y, scale, rotation) {
+    SpriteBase.call(this, x, y, scale, rotation);
+    this.currentFrame = new Frame(graphicSheets.Projectiles, 0);
+    this.dy = 6;
+    this.executeRules = function () {
+        this.y -= this.dy;
+        if (this.y < -64) sprites.splice(sprites.indexOf(this), 1);
+    };
+}
+PlayerMissile.prototype = new SpriteBase();
+PlayerMissile.prototype.constructor = PlayerMissile;
+
+
+
+
+
 function TestEnemy(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
     this.currentFrame = new Frame(graphicSheets.testImage, 0);
@@ -31,7 +74,7 @@ function TestEnemy(x, y, scale, rotation) {
         if (this.attackTimer <= 0) {
             this.scale = this.originalScale;
             this.attackTimer = 200 + Math.random() * 500;
-            sprites.push(new TestMissile(this.x, this.y + 32, 8));
+            sprites.push(new TestMissile(this.x, this.y + 32, 4));
         }
     };
 }
@@ -54,7 +97,7 @@ TestEnemy2.prototype.constructor = TestEnemy2;
 
 function TestMissile(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
-    this.currentFrame = new Frame(graphicSheets.testImage, 2);
+    this.currentFrame = new Frame(graphicSheets.Projectiles, 1);
     this.dy = 6;
     this.executeRules = function () {
         this.y += this.dy;

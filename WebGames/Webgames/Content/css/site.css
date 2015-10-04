@@ -24,3 +24,8 @@ canvas {
     outline: 5px solid white;
     outline-offset: 3px;
 }
+
+#instructions {
+    text-align: center;
+    color: white;
+}

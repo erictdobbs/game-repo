@@ -79,6 +79,8 @@ function cycleMouseInfo() {
 
 
 function initializeSprites() {
+    sprites.push(new PlayerShip(400, 500, 4));
+
     sprites.push(new TestEnemy(200, 80, 8));
     sprites.push(new TestEnemy(300, 80, 8));
     sprites.push(new TestEnemy(400, 80, 8));

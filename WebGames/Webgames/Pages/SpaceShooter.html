@@ -6,6 +6,7 @@
     <link rel="stylesheet" type="text/css" href="../Content/css/site.css">
 
     <script type="text/javascript" src="../Content/javaScript/ImageHandler.js"></script>
+    <script type="text/javascript" src="../Content/javaScript/KeyboardHandler.js"></script>
     <script type="text/javascript" src="../Content/javaScript/Sprites.js"></script>
     <script type="text/javascript" src="../Content/javaScript/SpaceShooter.js"></script>
 </head>
@@ -14,9 +15,15 @@
         Your browser does not support HTML5 canvases.
     </canvas>
 
+    <div id="instructions">
+    <p>WASD to move, space to shoot</p>
+    </div>
+
     <!-- Image files -->
     <div class="hidden">
-        <img class="graphicSheet" id="testImage" data-cellWidth="8" data-cellHeight="8" src="../Content/Images/SpaceTiles.png" />
+        <img class="graphicSheet" id="testImage" data-cellwidth="8" data-cellheight="8" src="../Content/Images/SpaceTiles.png" />
+        <img class="graphicSheet" id="PlayerShip" data-cellwidth="16" data-cellheight="16" src="../Content/Images/PlayerShip.png" />
+        <img class="graphicSheet" id="Projectiles" data-cellwidth="5" data-cellheight="16" src="../Content/Images/Projectiles.png" />
     </div>
 </body>
 </html>
