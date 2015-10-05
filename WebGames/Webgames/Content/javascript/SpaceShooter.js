@@ -92,6 +92,11 @@ function initializeSprites() {
     sprites.push(new TestEnemy2(400, 240, 16));
     sprites.push(new TestEnemy2(560, 240, 16));
     sprites.push(new TestEnemy2(720, 240, 16));
+
+    setInterval(function () {
+        if (Math.random() < 0.20)
+            sprites.push(new Asteroid(200 + 400 * Math.random(), -100, 4 + 6 * Math.random()));
+    }, 1000);
 }
 
 

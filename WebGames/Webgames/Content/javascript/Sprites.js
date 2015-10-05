@@ -106,3 +106,22 @@ function TestMissile(x, y, scale, rotation) {
 }
 TestMissile.prototype = new SpriteBase();
 TestMissile.prototype.constructor = TestMissile;
+
+
+
+
+
+function Asteroid(x, y, scale, rotation) {
+    SpriteBase.call(this, x, y, scale, rotation);
+    this.currentFrame = new Frame(graphicSheets.testImage, 2);
+    this.dx = Math.random() * 4 - 2;
+    this.dy = 12 - this.scale;
+    this.executeRules = function () {
+        this.x += this.dx;
+        this.y += this.dy;
+        this.rotation -= Math.PI / 48;
+        if (this.y > viewHeight + 64) sprites.splice(sprites.indexOf(this), 1);
+    };
+}
+Asteroid.prototype = new SpriteBase();
+Asteroid.prototype.constructor = Asteroid;
