@@ -1,4 +1,4 @@
-﻿
+﻿var drawHitboxes = false;
 
 function SpriteBase(x, y, scale, rotation) {
     this.x = x;
@@ -7,10 +7,18 @@ function SpriteBase(x, y, scale, rotation) {
     this.dy = 0;
     this.scale = scale === undefined ? 1 : scale;
     this.rotation = rotation === undefined ? 0 : rotation;
+    this.collisionClasses = [];
     this.executeRules = function () { };
-    //this.currentFrame = new Frame(graphicSheets.testImage, 0);
     this.draw = function () {
         this.currentFrame.draw(this.x, this.y, this.scale, this.rotation);
+        if ((drawHitboxes || keyboardState.isKeyPressed(keyboardState.key.H)) && this.hitbox != null) {
+            if (this.hitbox.type == hitboxType.Circle) {
+                gameViewContext.beginPath();
+                gameViewContext.arc(this.x, this.y, this.hitbox.radius * this.scale, 0, 2 * Math.PI);
+                gameViewContext.strokeStyle = "white";
+                gameViewContext.stroke();
+            }
+        }
     }
 }
 
@@ -19,7 +27,12 @@ function SpriteBase(x, y, scale, rotation) {
 function PlayerShip(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
     this.currentFrame = new Frame(graphicSheets.PlayerShip, 0);
+    this.collisionClasses = ["Player"];
     this.weaponCooldown = 0;
+    this.hitbox = {
+        type: hitboxType.Circle,
+        radius: 8
+    };
     this.executeRules = function () {
         if (this.weaponCooldown > 0) this.weaponCooldown -= 1;
 
@@ -44,10 +57,21 @@ PlayerShip.prototype.constructor = PlayerShip;
 function PlayerMissile(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
     this.currentFrame = new Frame(graphicSheets.Projectiles, 0);
+    this.collisionClasses = ["PlayerAttack"];
+    this.hitbox = {
+        type: hitboxType.Circle,
+        radius: 1
+    };
     this.dy = 6;
     this.executeRules = function () {
         this.y -= this.dy;
         if (this.y < -64) sprites.splice(sprites.indexOf(this), 1);
+
+        var struckEnemies = getOverlappingSprites(this, "Enemy");
+        if (struckEnemies.length > 0) {
+            sprites.splice(sprites.indexOf(struckEnemies[0]), 1);
+            sprites.splice(sprites.indexOf(this, 1));
+        }
     };
 }
 PlayerMissile.prototype = new SpriteBase();
@@ -60,6 +84,11 @@ PlayerMissile.prototype.constructor = PlayerMissile;
 function TestEnemy(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
     this.currentFrame = new Frame(graphicSheets.testImage, 0);
+    this.collisionClasses = ["Enemy"];
+    this.hitbox = {
+        type: hitboxType.Circle,
+        radius: 4
+    };
     this.movementCounter = 0;
     this.attackTimer = 200 + Math.random() * 500;
     this.originalScale = this.scale;
@@ -86,6 +115,11 @@ TestEnemy.prototype.constructor = TestEnemy;
 function TestEnemy2(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
     this.currentFrame = new Frame(graphicSheets.testImage, 1);
+    this.collisionClasses = ["Enemy"];
+    this.hitbox = {
+        type: hitboxType.Circle,
+        radius: 4
+    };
     this.executeRules = function () {
         this.rotation -= Math.PI / 48;
     };
@@ -98,6 +132,11 @@ TestEnemy2.prototype.constructor = TestEnemy2;
 function TestMissile(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
     this.currentFrame = new Frame(graphicSheets.Projectiles, 1);
+    this.collisionClasses = ["EnemyAttack"];
+    this.hitbox = {
+        type: hitboxType.Circle,
+        radius: 1
+    };
     this.dy = 6;
     this.executeRules = function () {
         this.y += this.dy;
@@ -114,6 +153,11 @@ TestMissile.prototype.constructor = TestMissile;
 function Asteroid(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
     this.currentFrame = new Frame(graphicSheets.testImage, 2);
+    this.collisionClasses = ["Enemy"];
+    this.hitbox = {
+        type: hitboxType.Circle,
+        radius: 4
+    };
     this.dx = Math.random() * 4 - 2;
     this.dy = 12 - this.scale;
     this.executeRules = function () {
