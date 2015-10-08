@@ -61,6 +61,7 @@ function startGame() {
 
     gameViewContext = gameView.getContext('2d');
     gameViewContext.imageSmoothingEnabled = false;
+
     mainLoop.interval = setInterval(pulse, mainLoop.milliseconds);
 }
 
@@ -97,6 +98,16 @@ function initializeSprites() {
         if (Math.random() < 0.20)
             sprites.push(new Asteroid(200 + 400 * Math.random(), -100, 4 + 6 * Math.random()));
     }, 1000);
+
+    setInterval(function () {
+        if (Math.random() < 0.20) {
+            var type = parseInt(Math.random() * 4);
+            if (type == 0) sprites.push(new PowerUpRepair(200 + 400 * Math.random(), -100, 4));
+            if (type == 1) sprites.push(new PowerUpWeapon(200 + 400 * Math.random(), -100, 4));
+            if (type == 2) sprites.push(new PowerUpShield(200 + 400 * Math.random(), -100, 4));
+            if (type == 3) sprites.push(new PowerUpSpeed(200 + 400 * Math.random(), -100, 4));
+        }
+    }, 15000);
 }
 
 
