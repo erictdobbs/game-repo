@@ -5,7 +5,7 @@ window.onload = startGame;
 var gameViewContext;
 var sprites = [];
 var mouseInfo = { x: 0, y: 0, pressed: false, oldX: 0, oldY: 0, clicked: false };
-var mainLoop = { interval: null, milliseconds: 20 };
+var mainLoop = { interval: null, milliseconds: 19 };
 
 function startGame() {
     initGraphicSheets();
@@ -65,9 +65,18 @@ function startGame() {
     mainLoop.interval = setInterval(pulse, mainLoop.milliseconds);
 }
 
+var frameTimes = [];
 function pulse() {
     testDraw();
     cycleMouseInfo();
+
+    frameTimes.push(new Date());
+    if (frameTimes.length > 50) frameTimes.splice(0, 1);
+    var fpsText = "FPS: " + parseInt(1000 * frameTimes.length / (frameTimes[frameTimes.length - 1] - frameTimes[0]));
+    gameViewContext.font = "16px Arial";
+    gameViewContext.fillStyle = "white";
+    gameViewContext.shadowBlur = 0;
+    gameViewContext.fillText(fpsText, 10, 20);
 }
 
 function cycleMouseInfo() {
@@ -107,7 +116,7 @@ function initializeSprites() {
             if (type == 2) sprites.push(new PowerUpShield(200 + 400 * Math.random(), -100, 4));
             if (type == 3) sprites.push(new PowerUpSpeed(200 + 400 * Math.random(), -100, 4));
         }
-    }, 15000);
+    }, 5000);
 }
 
 

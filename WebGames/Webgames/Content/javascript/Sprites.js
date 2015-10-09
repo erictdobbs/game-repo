@@ -21,9 +21,13 @@ function SpriteBase(x, y, scale, rotation) {
                 gameViewContext.beginPath();
                 gameViewContext.arc(this.x, this.y, this.hitbox.radius * this.scale, 0, 2 * Math.PI);
                 gameViewContext.strokeStyle = "white";
+                gameViewContext.closePath();
                 gameViewContext.stroke();
+
             }
         }
+
+        if (this.children != null) for (var i = 0; i < this.children.length; i++) this.children[i].draw();
     }
     this.delete = function () {
         sprites.splice(sprites.indexOf(this), 1);
@@ -41,6 +45,7 @@ function PlayerShip(x, y, scale, rotation) {
         type: hitboxType.Circle,
         radius: 8
     };
+    this.children = [new PlayerShield(this, "cyan")];
     this.speed = 5;
     this.executeRules = function () {
         if (this.weaponCooldown > 0) this.weaponCooldown -= 1;
@@ -53,12 +58,64 @@ function PlayerShip(x, y, scale, rotation) {
             this.weaponCooldown = 30;
             sprites.push(new PlayerMissile(this.x, this.y - 32, 4));
         }
+        
+        var struckDamagers = getOverlappingSprites(this, "HurtsPlayer");
+        for (var i = 0; i < struckDamagers.length; i++) {
+            if (struckDamagers[i].collisionClasses.indexOf("BlockedByShield") > -1) {
+                for (var j = 0; j < this.children.length; j++) {
+                    if (this.children[j] instanceof PlayerShield) {
+                        this.children[j].trigger();
+                        struckDamagers[i].delete();
+                        break;
+                    }
+                }
+            }
+        }
     };
 }
 PlayerShip.prototype = new SpriteBase();
 PlayerShip.prototype.constructor = PlayerShip;
 
 
+
+function PlayerShield(parent, color) {
+    SpriteBase.call(this, parent.x, parent.y);
+    this.parent = parent;
+    this.color = color;
+    this.shieldTimer = 0;
+
+    this.active = false;
+    this.trigger = function () {
+        this.active = true;
+        this.shieldTimer = 50;
+    }
+
+    this.draw = function () {
+        if (!this.active) return;
+        var x = this.parent.x;
+        var y = this.parent.y;
+        var radius = this.parent.currentFrame.graphicSheet.cellHeight * this.parent.scale / 1.5;
+        var innerRadius = (this.shieldTimer < 200 ? 0 : this.shieldTimer - 200);
+        var outerRadius = this.shieldTimer;
+        var gradient = gameViewContext.createRadialGradient(x, y - radius, innerRadius, x, y - radius, outerRadius);
+
+        // TODO: make color work from object's color value
+        gradient.addColorStop(0, 'rgba(128,128,255,0)');
+        gradient.addColorStop(0.9, 'rgba(128,255,255,1)');
+        gradient.addColorStop(1, 'rgba(128,255,255,0)');
+        gameViewContext.beginPath();
+        gameViewContext.arc(x, y, radius, 0, 2 * Math.PI);
+        gameViewContext.fillStyle = gradient;
+        gameViewContext.closePath();
+        gameViewContext.fill();
+
+        this.shieldTimer += 5;
+        if (this.shieldTimer > 300) {
+            this.active = false;
+            this.shieldTimer = 0;
+        }
+    }
+}
 
 
 
@@ -94,7 +151,7 @@ PlayerMissile.prototype.constructor = PlayerMissile;
 function TestEnemy(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
     this.currentFrame = new Frame(graphicSheets.testImage, 0);
-    this.collisionClasses = ["Enemy"];
+    this.collisionClasses = ["Enemy", "HurtsPlayer"];
     this.hitbox = {
         type: hitboxType.Circle,
         radius: 4
@@ -125,7 +182,7 @@ TestEnemy.prototype.constructor = TestEnemy;
 function TestEnemy2(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
     this.currentFrame = new Frame(graphicSheets.testImage, 1);
-    this.collisionClasses = ["Enemy"];
+    this.collisionClasses = ["Enemy", "HurtsPlayer"];
     this.hitbox = {
         type: hitboxType.Circle,
         radius: 4
@@ -142,7 +199,7 @@ TestEnemy2.prototype.constructor = TestEnemy2;
 function TestMissile(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
     this.currentFrame = new Frame(graphicSheets.Projectiles, 1);
-    this.collisionClasses = ["EnemyAttack"];
+    this.collisionClasses = ["EnemyAttack", "HurtsPlayer", "BlockedByShield"];
     this.shadowBlur = 20;
     this.hitbox = {
         type: hitboxType.Circle,
@@ -164,7 +221,7 @@ TestMissile.prototype.constructor = TestMissile;
 function Asteroid(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
     this.currentFrame = new Frame(graphicSheets.testImage, 2);
-    this.collisionClasses = ["Enemy"];
+    this.collisionClasses = ["Enemy", "HurtsPlayer", "BlockedByShield"];
     this.hitbox = {
         type: hitboxType.Circle,
         radius: 4
@@ -181,24 +238,6 @@ function Asteroid(x, y, scale, rotation) {
 Asteroid.prototype = new SpriteBase();
 Asteroid.prototype.constructor = Asteroid;
 
-
-
-
-function BackgroundStar(x, y, scale, rotation) {
-    SpriteBase.call(this, x, y, scale, rotation);
-    this.currentFrame = new Frame(graphicSheets.Background, parseInt(Math.random() * 2));
-    this.dy = Math.random() * 4 + 16;
-    this.executeRules = function () {
-        this.y += this.dy;
-        if (this.y > viewHeight + 64) {
-            this.y = -64;
-            this.dy = Math.random() * 4 + 16;
-            this.x = Math.random() * viewWidth;
-        }
-    };
-}
-BackgroundStar.prototype = new SpriteBase();
-BackgroundStar.prototype.constructor = BackgroundStar;
 
 
 
