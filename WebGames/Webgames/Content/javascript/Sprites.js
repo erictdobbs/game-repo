@@ -79,6 +79,9 @@ function SpriteBase(x, y, scale, rotation) {
 
 
     this.delete = function () {
+        console.log("Deleting " + this.constructor.name + " (index " + sprites.indexOf(this) + ")");
+        console.log(sprites.map(function (x) { return x.constructor.name; }));
+
         sprites.splice(sprites.indexOf(this), 1);
     }
 }
@@ -112,7 +115,7 @@ function PlayerShip(x, y, scale, rotation) {
             sprites.push(new PlayerMissile(this.x, this.y - 32, 4));
         }
 
-        this.shield.applyHealth(this.shieldRechargeRate);
+        if (this.shield.HP > 0) this.shield.applyHealth(this.shieldRechargeRate);
 
         this.handleCollisionDamage("HurtsPlayer", "BlockedByShield");
     };
@@ -137,10 +140,18 @@ function Shield(parent, hp, color) {
     }
 
     this.draw = function () {
-        if (!this.active) return;
+        if (this.HP <= 0) return;
+
         var x = this.parent.x;
         var y = this.parent.y;
         var radius = this.parent.currentFrame.graphicSheet.cellHeight * this.parent.scale / 1.5;
+        gameViewContext.beginPath();
+        gameViewContext.arc(x, y, radius, 0, 2 * Math.PI);
+        gameViewContext.strokeStyle = 'rgba(0,255,255,0.3)';
+        gameViewContext.closePath();
+        gameViewContext.stroke();
+
+        if (!this.active) return;
         var innerRadius = (this.shieldTimer < 200 ? 0 : this.shieldTimer - 200);
         var outerRadius = this.shieldTimer;
         var gradient = gameViewContext.createRadialGradient(x, y - radius, innerRadius, x, y - radius, outerRadius);

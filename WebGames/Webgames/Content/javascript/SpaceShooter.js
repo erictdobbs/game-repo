@@ -94,12 +94,17 @@ function cycleMouseInfo() {
 function initializeSprites() {
     player = new PlayerShip(400, 500, 4)
     sprites.push(player);
-    meters.push(new MeterBase(400, 575, 500, 5, "blue",
+
+    var hpMeter = new MeterBase(400, 585, 500, 10, "green",
+        function () { return player.HP },
+        function () { return player.maxHP; })
+    var shieldMeter = new MeterBase(275, 575, 250, 5, "blue",
         function () { return player.shield.HP },
-        function () { return player.shield.maxHP; }));
-        meters.push(new MeterBase(400, 585, 500, 10, "green",
-            function () { return player.HP },
-            function () { return player.maxHP; }));
+        function () { return player.shield.maxHP; })
+    shieldMeter.minorTicks = 2;
+
+    meters.push(shieldMeter);
+    meters.push(hpMeter);
 
     sprites.push(new TestEnemy(200, 80, 8));
     sprites.push(new TestEnemy(300, 80, 8));
