@@ -4,8 +4,11 @@ window.onload = startGame;
 
 var gameViewContext;
 var sprites = [];
+var meters = [];
 var mouseInfo = { x: 0, y: 0, pressed: false, oldX: 0, oldY: 0, clicked: false };
 var mainLoop = { interval: null, milliseconds: 19 };
+
+var player;
 
 function startGame() {
     initGraphicSheets();
@@ -89,7 +92,14 @@ function cycleMouseInfo() {
 
 
 function initializeSprites() {
-    sprites.push(new PlayerShip(400, 500, 4));
+    player = new PlayerShip(400, 500, 4)
+    sprites.push(player);
+    meters.push(new MeterBase(400, 575, 500, 5, "blue",
+        function () { return player.shield.HP },
+        function () { return player.shield.maxHP; }));
+        meters.push(new MeterBase(400, 585, 500, 10, "green",
+            function () { return player.HP },
+            function () { return player.maxHP; }));
 
     sprites.push(new TestEnemy(200, 80, 8));
     sprites.push(new TestEnemy(300, 80, 8));
@@ -130,6 +140,7 @@ function testDraw() {
 
     for (var i = 0; i < sprites.length; i++) sprites[i].executeRules();
     for (var i = 0; i < sprites.length; i++) sprites[i].draw();
+    for (var i = 0; i < meters.length; i++) meters[i].draw();
 
     test += Math.PI / 24;
 }

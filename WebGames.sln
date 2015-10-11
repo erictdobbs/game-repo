@@ -1,28 +1,27 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebGames", "http://localhost:50552", "{3F20AE65-D8BC-4829-989F-524D9C535E86}"
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "Webgames", "http://localhost:2019", "{5DC5F58E-21B0-4E4D-91E5-148205D832B4}"
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "true"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5"
-		Debug.AspNetCompiler.VirtualPath = "/localhost_50552"
-		Debug.AspNetCompiler.PhysicalPath = "..\..\Projects\WebGames\WebGames\"
-		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_50552\"
+		Debug.AspNetCompiler.VirtualPath = "/localhost_2019"
+		Debug.AspNetCompiler.PhysicalPath = "WebGames\Webgames\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_2019\"
 		Debug.AspNetCompiler.Updateable = "true"
 		Debug.AspNetCompiler.ForceOverwrite = "true"
 		Debug.AspNetCompiler.FixedNames = "false"
 		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.VirtualPath = "/localhost_50552"
-		Release.AspNetCompiler.PhysicalPath = "..\..\Projects\WebGames\WebGames\"
-		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_50552\"
+		Release.AspNetCompiler.VirtualPath = "/localhost_2019"
+		Release.AspNetCompiler.PhysicalPath = "WebGames\Webgames\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_2019\"
 		Release.AspNetCompiler.Updateable = "true"
 		Release.AspNetCompiler.ForceOverwrite = "true"
 		Release.AspNetCompiler.FixedNames = "false"
 		Release.AspNetCompiler.Debug = "False"
-		SlnRelativePath = "..\..\Projects\WebGames\WebGames\"
-		DefaultWebSiteLanguage = "Visual C#"
+		SlnRelativePath = "WebGames\Webgames\"
 	EndProjectSection
 EndProject
 Global
@@ -30,8 +29,8 @@ Global
 		Debug|Any CPU = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3F20AE65-D8BC-4829-989F-524D9C535E86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3F20AE65-D8BC-4829-989F-524D9C535E86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DC5F58E-21B0-4E4D-91E5-148205D832B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DC5F58E-21B0-4E4D-91E5-148205D832B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

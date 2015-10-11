@@ -27,8 +27,57 @@ function SpriteBase(x, y, scale, rotation) {
             }
         }
 
-        if (this.children != null) for (var i = 0; i < this.children.length; i++) this.children[i].draw();
+        if (this.shield != null) this.shield.draw();
     }
+
+    this.maxHP = 6;
+    this.HP = 5;
+    this.damage = 5;
+
+    this.handleCollisionDamage = function (category, shieldBlockedCategory) {
+        var struckDamagers = getOverlappingSprites(this, category);
+        for (var i = 0; i < struckDamagers.length; i++) {
+            if (shieldBlockedCategory != undefined &&
+                struckDamagers[i].collisionClasses.indexOf(shieldBlockedCategory) > -1 &&
+                this.shield != null && this.shield.HP > 0) {
+
+                var shieldHP = this.shield.HP;
+                this.shield.applyDamage(struckDamagers[i].damage);
+                this.shield.trigger();
+
+                if (this.shield.HP <= 0) {
+                    this.applyDamage(struckDamagers[i].damage - shieldHP);
+                }
+            } else {
+                this.applyDamage(struckDamagers[i].damage);
+            }
+            struckDamagers[i].applyDamage(this.damage);
+        }
+    }
+    
+    this.applyHealth = function (health) {
+        this.HP += health;
+        if (this.HP > this.maxHP) {
+            this.HP = this.maxHP;
+        } else {
+            console.log(this.constructor.name + " healed for " + health + " HP");
+        }
+    }
+    this.applyDamage = function (damage) {
+        console.log(this.constructor.name + " took " + damage + " damage");
+        if (this.onTakeDamage) this.onTakeDamage();
+
+        this.HP -= damage;
+        if (this.HP <= 0) {
+            this.HP = 0;
+            this.kill();
+        }
+    }
+    this.kill = function () {
+        this.delete();
+    }
+
+
     this.delete = function () {
         sprites.splice(sprites.indexOf(this), 1);
     }
@@ -41,36 +90,31 @@ function PlayerShip(x, y, scale, rotation) {
     this.currentFrame = new Frame(graphicSheets.PlayerShip, 0);
     this.collisionClasses = ["Player"];
     this.weaponCooldown = 0;
+    this.weaponRechargeSpeed = 1;
     this.hitbox = {
         type: hitboxType.Circle,
         radius: 8
     };
-    this.children = [new PlayerShield(this, "cyan")];
+    this.shield = new Shield(this, 10, "cyan");
+    this.shieldRechargeRate = 0.01;
     this.speed = 5;
+    this.maxHP = 20;
+    this.HP = 20;
     this.executeRules = function () {
-        if (this.weaponCooldown > 0) this.weaponCooldown -= 1;
+        if (this.weaponCooldown > 0) this.weaponCooldown -= this.weaponRechargeSpeed;
 
         if (keyboardState.isKeyPressed(keyboardState.key.A) && this.x > 0) this.x -= this.speed;
         if (keyboardState.isKeyPressed(keyboardState.key.D) && this.x < viewWidth) this.x += this.speed;
         if (keyboardState.isKeyPressed(keyboardState.key.S) && this.y < viewHeight) this.y += this.speed;
         if (keyboardState.isKeyPressed(keyboardState.key.W) && this.y > 0) this.y -= this.speed;
-        if (keyboardState.isKeyPressed(keyboardState.key.Space) && this.weaponCooldown == 0) {
+        if (keyboardState.isKeyPressed(keyboardState.key.Space) && this.weaponCooldown <= 0) {
             this.weaponCooldown = 30;
             sprites.push(new PlayerMissile(this.x, this.y - 32, 4));
         }
-        
-        var struckDamagers = getOverlappingSprites(this, "HurtsPlayer");
-        for (var i = 0; i < struckDamagers.length; i++) {
-            if (struckDamagers[i].collisionClasses.indexOf("BlockedByShield") > -1) {
-                for (var j = 0; j < this.children.length; j++) {
-                    if (this.children[j] instanceof PlayerShield) {
-                        this.children[j].trigger();
-                        struckDamagers[i].delete();
-                        break;
-                    }
-                }
-            }
-        }
+
+        this.shield.applyHealth(this.shieldRechargeRate);
+
+        this.handleCollisionDamage("HurtsPlayer", "BlockedByShield");
     };
 }
 PlayerShip.prototype = new SpriteBase();
@@ -78,10 +122,12 @@ PlayerShip.prototype.constructor = PlayerShip;
 
 
 
-function PlayerShield(parent, color) {
+function Shield(parent, hp, color) {
     SpriteBase.call(this, parent.x, parent.y);
     this.parent = parent;
     this.color = color;
+    this.HP = hp;
+    this.maxHP = hp;
     this.shieldTimer = 0;
 
     this.active = false;
@@ -116,13 +162,15 @@ function PlayerShield(parent, color) {
         }
     }
 }
+Shield.prototype = new SpriteBase();
+Shield.prototype.constructor = Shield;
 
 
 
 
 function PlayerMissile(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
-    this.currentFrame = new Frame(graphicSheets.Projectiles, 0);
+    this.currentFrame = new Frame(graphicSheets.Projectiles, 2);
     this.collisionClasses = ["PlayerAttack"];
     this.shadowBlur = 20;
     this.hitbox = {
@@ -130,15 +178,13 @@ function PlayerMissile(x, y, scale, rotation) {
         radius: 1
     };
     this.dy = 6;
+    this.damage = 3;
+    this.HP = 1;
     this.executeRules = function () {
         this.y -= this.dy;
         if (this.y < -64) this.delete();
 
-        var struckEnemies = getOverlappingSprites(this, "Enemy");
-        if (struckEnemies.length > 0) {
-            struckEnemies[0].delete();
-            this.delete();
-        }
+        this.handleCollisionDamage("Enemy");
     };
 }
 PlayerMissile.prototype = new SpriteBase();
@@ -198,13 +244,14 @@ TestEnemy2.prototype.constructor = TestEnemy2;
 
 function TestMissile(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
-    this.currentFrame = new Frame(graphicSheets.Projectiles, 1);
+    this.currentFrame = new Frame(graphicSheets.Projectiles, 3);
     this.collisionClasses = ["EnemyAttack", "HurtsPlayer", "BlockedByShield"];
     this.shadowBlur = 20;
     this.hitbox = {
         type: hitboxType.Circle,
         radius: 1
     };
+    this.damage = 3;
     this.dy = 6;
     this.executeRules = function () {
         this.y += this.dy;
@@ -221,6 +268,9 @@ TestMissile.prototype.constructor = TestMissile;
 function Asteroid(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
     this.currentFrame = new Frame(graphicSheets.testImage, 2);
+    this.damage = parseInt(scale / 2);
+    this.HP = scale;
+    this.maxHP = scale;
     this.collisionClasses = ["Enemy", "HurtsPlayer", "BlockedByShield"];
     this.hitbox = {
         type: hitboxType.Circle,
@@ -228,6 +278,12 @@ function Asteroid(x, y, scale, rotation) {
     };
     this.dx = Math.random() * 4 - 2;
     this.dy = 12 - this.scale;
+
+    this.onTakeDamage = function (damage) {
+        this.dx /= 1.5;
+        this.dy /= 1.5;
+    }
+
     this.executeRules = function () {
         this.x += this.dx;
         this.y += this.dy;
@@ -273,7 +329,7 @@ function PowerUpRepair(x, y, scale, rotation) {
     PowerUpBase.call(this, x, y, scale, rotation, "cyan");
     this.currentFrame = new Frame(graphicSheets.PowerUp, 0);
     this.powerUpEffect = function (ship) {
-        
+        ship.applyHealth(ship.maxHP / 4);
     }
 }
 PowerUpRepair.prototype = new PowerUpBase();
@@ -284,7 +340,7 @@ function PowerUpWeapon(x, y, scale, rotation) {
     PowerUpBase.call(this, x, y, scale, rotation, "magenta");
     this.currentFrame = new Frame(graphicSheets.PowerUp, 1);
     this.powerUpEffect = function (ship) {
-
+        ship.weaponRechargeSpeed += 0.5;
     }
 }
 PowerUpWeapon.prototype = new PowerUpBase();
@@ -295,7 +351,13 @@ function PowerUpShield(x, y, scale, rotation) {
     PowerUpBase.call(this, x, y, scale, rotation, "lime");
     this.currentFrame = new Frame(graphicSheets.PowerUp, 2);
     this.powerUpEffect = function (ship) {
-
+        if (ship.shield != null) {
+            if (ship.shield.HP == ship.shield.maxHP) {
+                ship.shieldRechargeRate += 0.005;
+            } else {
+                ship.shield.applyHealth(ship.shield.maxHP);
+            }
+        }
     }
 }
 PowerUpShield.prototype = new PowerUpBase();
