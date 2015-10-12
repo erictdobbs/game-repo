@@ -28,6 +28,7 @@ function initGraphicSheets() {
 // Represent tiles of image data
 //
 function Frame(graphicSheet, cellIndex) {
+    console.log(graphicSheet, cellIndex);
     this.graphicSheet = graphicSheet;
     this.imageSource = graphicSheet.image;
     this.cellIndex = cellIndex;

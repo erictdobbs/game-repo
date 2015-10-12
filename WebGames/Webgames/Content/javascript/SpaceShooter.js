@@ -92,6 +92,8 @@ function cycleMouseInfo() {
 
 
 function initializeSprites() {
+    sprites.push(new ItemDropPixelite(400, 300));
+
     player = new PlayerShip(400, 500, 4)
     sprites.push(player);
 
