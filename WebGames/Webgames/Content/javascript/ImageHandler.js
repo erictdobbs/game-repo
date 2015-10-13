@@ -11,7 +11,7 @@ function GraphicSheet(image, cellWidth, cellHeight) {
     this.columns = image.width / cellWidth;
     this.rows = image.height / cellHeight;
 }
-function initGraphicSheets() {
+function initializeGraphicSheets() {
     var images = document.getElementsByClassName("graphicSheet");
     for (var i = 0; i < images.length; i++) {
         var imageName = images[i].id;
@@ -28,7 +28,6 @@ function initGraphicSheets() {
 // Represent tiles of image data
 //
 function Frame(graphicSheet, cellIndex) {
-    console.log(graphicSheet, cellIndex);
     this.graphicSheet = graphicSheet;
     this.imageSource = graphicSheet.image;
     this.cellIndex = cellIndex;

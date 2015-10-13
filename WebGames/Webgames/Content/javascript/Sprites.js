@@ -1,6 +1,8 @@
 ﻿var drawHitboxes = false;
 
 function SpriteBase(x, y, scale, rotation) {
+    this.active = true;
+
     this.x = x;
     this.y = y;
     this.dx = 0;
@@ -10,8 +12,13 @@ function SpriteBase(x, y, scale, rotation) {
     this.collisionClasses = [];
     this.shadowColor = "white";
     this.shadowBlur = 0;
+    this.inventory = {
+        commodities: {}
+    }
     this.executeRules = function () { };
     this.draw = function () {
+        if (!this.active) return;
+
         gameViewContext.shadowBlur = this.shadowBlur;
         gameViewContext.shadowColor = this.shadowColor;
 
@@ -60,11 +67,11 @@ function SpriteBase(x, y, scale, rotation) {
         if (this.HP > this.maxHP) {
             this.HP = this.maxHP;
         } else {
-            console.log(this.constructor.name + " healed for " + health + " HP");
+            logMessage(loggingSeverity.verbose, this.constructor.name + " healed for " + health + " HP");
         }
     }
     this.applyDamage = function (damage) {
-        console.log(this.constructor.name + " took " + damage + " damage");
+        logMessage(loggingSeverity.information, this.constructor.name + " took " + damage + " damage");
         if (this.onTakeDamage) this.onTakeDamage();
 
         this.HP -= damage;
@@ -75,13 +82,13 @@ function SpriteBase(x, y, scale, rotation) {
     }
     this.kill = function () {
         SpawnLoot(this);
-        this.delete();
+        this.active = false;
     }
 
 
     this.delete = function () {
-        console.log("Deleting " + this.constructor.name + " (index " + sprites.indexOf(this) + ")");
-        console.log(sprites.map(function (x) { return x.constructor.name; }));
+        logMessage(loggingSeverity.verbose, "Deleting " + this.constructor.name + " (index " + sprites.indexOf(this) + ")");
+        logMessage(loggingSeverity.verbose, sprites.map(function (x) { return x.constructor.name; }));
 
         sprites.splice(sprites.indexOf(this), 1);
     }
@@ -134,9 +141,9 @@ function Shield(parent, hp, color) {
     this.maxHP = hp;
     this.shieldTimer = 0;
 
-    this.active = false;
+    this.shieldActive = false;
     this.trigger = function () {
-        this.active = true;
+        this.shieldActive = true;
         this.shieldTimer = 50;
     }
 
@@ -152,7 +159,7 @@ function Shield(parent, hp, color) {
         gameViewContext.closePath();
         gameViewContext.stroke();
 
-        if (!this.active) return;
+        if (!this.shieldActive) return;
         var innerRadius = (this.shieldTimer < 200 ? 0 : this.shieldTimer - 200);
         var outerRadius = this.shieldTimer;
         var gradient = gameViewContext.createRadialGradient(x, y - radius, innerRadius, x, y - radius, outerRadius);
@@ -169,7 +176,7 @@ function Shield(parent, hp, color) {
 
         this.shieldTimer += 5;
         if (this.shieldTimer > 300) {
-            this.active = false;
+            this.shieldActive = false;
             this.shieldTimer = 0;
         }
     }
@@ -194,7 +201,7 @@ function PlayerMissile(x, y, scale, rotation) {
     this.HP = 1;
     this.executeRules = function () {
         this.y -= this.dy;
-        if (this.y < -64) this.delete();
+        if (this.y < -64) this.kill();
 
         this.handleCollisionDamage("Enemy");
     };
@@ -271,7 +278,7 @@ function TestMissile(x, y, scale, rotation) {
     this.dy = 6;
     this.executeRules = function () {
         this.y += this.dy;
-        if (this.y > viewHeight + 64) this.delete();
+        if (this.y > viewHeight + 64) this.kill();
     };
 }
 TestMissile.prototype = new SpriteBase();
@@ -304,7 +311,7 @@ function Asteroid(x, y, scale, rotation) {
         this.x += this.dx;
         this.y += this.dy;
         this.rotation -= Math.PI / 48;
-        if (this.y > viewHeight + 64) this.delete();
+        if (this.y > viewHeight + 64) this.kill();
     };
 
     this.itemDropPool = [itemTypes.MeteorOre];

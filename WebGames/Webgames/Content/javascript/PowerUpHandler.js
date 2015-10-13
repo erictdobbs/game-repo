@@ -14,11 +14,11 @@ function PowerUpBase(x, y, scale, rotation, shadowColor) {
     this.executeRules = function () {
         this.shadowBlur = Math.sin((this.glowTimer++) / 10) * 10 + 15;
         this.y += this.dy;
-        if (this.y > viewHeight + 64) this.delete();
+        if (this.y > viewHeight + 64) this.kill();
         var struckPlayer = getOverlappingSprites(this, "Player");
         if (struckPlayer.length > 0) {
             this.powerUpEffect(struckPlayer[0]);
-            this.delete();
+            this.kill();
         }
     };
 }
@@ -53,6 +53,7 @@ function PowerUpShield(x, y, scale, rotation) {
     this.currentFrame = new Frame(graphicSheets.PowerUp, 2);
     this.powerUpEffect = function (ship) {
         if (ship.shield != null) {
+            ship.shield.trigger();
             if (ship.shield.HP == ship.shield.maxHP) {
                 ship.shieldRechargeRate += 0.005;
             } else {

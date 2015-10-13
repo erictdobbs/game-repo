@@ -11,7 +11,8 @@ var mainLoop = { interval: null, milliseconds: 19 };
 var player;
 
 function startGame() {
-    initGraphicSheets();
+    initializeGraphicSheets();
+    initializeItemTypes();
     initializeSprites();
     var gameView = document.getElementById('gameView');
 
@@ -92,8 +93,6 @@ function cycleMouseInfo() {
 
 
 function initializeSprites() {
-    sprites.push(new ItemDropPixelite(400, 300));
-
     player = new PlayerShip(400, 500, 4)
     sprites.push(player);
 
@@ -138,18 +137,22 @@ function initializeSprites() {
 
 
 
-
-var test = 0;
 function testDraw() {
     gameViewContext.clearRect(0, 0, viewWidth, viewHeight);
     gameViewContext.fillStyle = "white";
     gameViewContext.fillRect(Math.random() * viewWidth, Math.random() * viewHeight, 5, 5);
 
-    for (var i = 0; i < sprites.length; i++) sprites[i].executeRules();
-    for (var i = 0; i < sprites.length; i++) sprites[i].draw();
-    for (var i = 0; i < meters.length; i++) meters[i].draw();
-
-    test += Math.PI / 24;
+    for (var i = 0; i < sprites.length; i++)
+        if (sprites[i] && sprites[i].active)
+            sprites[i].executeRules();
+    for (var i = sprites.length - 1; i > 0; i--)
+        if (sprites[i] && !sprites[i].active)
+            sprites[i].delete();
+    for (var i = 0; i < sprites.length; i++)
+        sprites[i].draw();
+    for (var i = 0; i < meters.length; i++)
+        meters[i].draw();
+    DrawInventory(player);
 }
 
 Array.prototype.rand = function () {
