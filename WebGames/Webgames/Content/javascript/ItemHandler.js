@@ -37,7 +37,13 @@ function SpawnLoot(enemy) {
 }
 
 
+
+
+var drawInventoryTimer = -1;
+
 function AddCommodityToInventory(player, commodityType, amount) {
+    if (drawInventoryTimer == -1) drawInventoryTimer = 0;
+    else drawInventoryTimer = 15;
     var commodities = player.inventory.commodities;
     if (commodities[commodityType]) {
         commodities[commodityType] += amount;
@@ -46,19 +52,48 @@ function AddCommodityToInventory(player, commodityType, amount) {
     }
 }
 
-
+function DrawInventoryMapPosition(timer) {
+    if (timer < 0) return 0;
+    if (timer < 15) return ((1 - Math.cos(Math.PI * timer / 15)) / 2);
+    if (timer < 200) return 1;
+    if (timer < 215) return ((1 - Math.cos(Math.PI * (215 - timer) / 15)) / 2);
+    return 0;
+}
 
 function DrawInventory(player) {
-    var y = 200;
-    var x = viewWidth - 50;
+    if (drawInventoryTimer != -1) drawInventoryTimer++;
+    if (drawInventoryTimer > 215) drawInventoryTimer = -1;
+
+    var numberOfItems = Object.keys(player.inventory.commodities).length;
+    if (numberOfItems == 0) return;
+
+    var largestItemNumber = 0;
     for (itemTypeName in player.inventory.commodities) {
-        y += 25;
+        var itemCount = player.inventory.commodities[itemTypeName];
+        if (itemCount > largestItemNumber) largestItemNumber = itemCount;
+    }
+
+    var extraWidthForExtraDigits = 10 * parseInt(Math.log10(largestItemNumber));
+    var xOffset = (70 + extraWidthForExtraDigits) * (1 - DrawInventoryMapPosition(drawInventoryTimer));
+
+    var itemHeight = 25;
+    var y = 200;
+    var x = viewWidth - 50 + xOffset;
+    
+
+    x -= extraWidthForExtraDigits;
+
+    gameViewContext.shadowBlur = 0;
+    gameViewContext.fillStyle = "rgba(0,0,0,0.5)";
+    gameViewContext.fillRect(x - 20, y, 200, itemHeight * (numberOfItems + 1));
+
+    for (itemTypeName in player.inventory.commodities) {
+        y += itemHeight;
         var itemType = itemTypes[itemTypeName.replace("ItemDrop", "")];
-        itemType.frame.draw(viewWidth - 50, y, 1, 0);
+        itemType.frame.draw(x, y, 1, 0);
 
         gameViewContext.font = "16px Arial";
         gameViewContext.fillStyle = "white";
-        gameViewContext.shadowBlur = 0;
         var text = player.inventory.commodities[itemTypeName].toString();
         gameViewContext.fillText(text, x + 20, y + 4);
     }
