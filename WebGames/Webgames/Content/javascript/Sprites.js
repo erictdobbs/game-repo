@@ -81,6 +81,8 @@ function SpriteBase(x, y, scale, rotation) {
         }
     }
     this.kill = function () {
+        if (this.onKill) this.onKill();
+
         SpawnLoot(this);
         this.active = false;
     }
@@ -127,6 +129,9 @@ function PlayerShip(x, y, scale, rotation) {
 
         this.handleCollisionDamage("HurtsPlayer", "BlockedByShield");
     };
+    this.onKill = function () {
+        CreateParticleEffectExplosion(this.x, this.y);
+    }
 }
 PlayerShip.prototype = new SpriteBase();
 PlayerShip.prototype.constructor = PlayerShip;
@@ -240,6 +245,9 @@ function TestEnemy(x, y, scale, rotation) {
     };
 
     this.itemDropPool = [itemTypes.Pixelite, itemTypes.PowerCell];
+    this.onKill = function () {
+        CreateParticleEffectExplosion(this.x, this.y);
+    }
 }
 TestEnemy.prototype = new SpriteBase();
 TestEnemy.prototype.constructor = TestEnemy;
@@ -259,6 +267,9 @@ function TestEnemy2(x, y, scale, rotation) {
     };
 
     this.itemDropPool = [itemTypes.Pixelite];
+    this.onKill = function () {
+        CreateParticleEffectExplosion(this.x, this.y);
+    }
 }
 TestEnemy2.prototype = new SpriteBase();
 TestEnemy2.prototype.constructor = TestEnemy2;
@@ -315,8 +326,10 @@ function Asteroid(x, y, scale, rotation) {
     };
 
     this.itemDropPool = [itemTypes.MeteorOre];
+    this.onKill = function () {
+        CreateParticleEffectExplosion(this.x, this.y);
+    }
 }
 Asteroid.prototype = new SpriteBase();
 Asteroid.prototype.constructor = Asteroid;
-
 

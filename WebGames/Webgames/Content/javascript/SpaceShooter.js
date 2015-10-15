@@ -4,6 +4,8 @@ window.onload = startGame;
 
 var gameViewContext;
 var sprites = [];
+var particleEffects = [];
+var particleEffectGenerators = [];
 var meters = [];
 var mouseInfo = { x: 0, y: 0, pressed: false, oldX: 0, oldY: 0, clicked: false };
 var mainLoop = { interval: null, milliseconds: 19 };
@@ -141,6 +143,11 @@ function testDraw() {
     gameViewContext.clearRect(0, 0, viewWidth, viewHeight);
     gameViewContext.fillStyle = "white";
     gameViewContext.fillRect(Math.random() * viewWidth, Math.random() * viewHeight, 5, 5);
+
+    for (var i = 0; i < particleEffects.length; i++)
+        particleEffects[i].draw();
+    for (var i = 0; i < particleEffectGenerators.length; i++)
+        particleEffectGenerators[i].update();
 
     for (var i = 0; i < sprites.length; i++)
         if (sprites[i] && sprites[i].active)
