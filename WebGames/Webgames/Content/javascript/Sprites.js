@@ -100,6 +100,9 @@ function SpriteBase(x, y, scale, rotation) {
 
 function PlayerShip(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
+    particleEffectGenerators.push(new ParticleEffectSmokeGenerator(this, 0, 1));
+    this.dx = 0;
+    this.dy = 0;
     this.currentFrame = new Frame(graphicSheets.PlayerShip, 0);
     this.collisionClasses = ["Player"];
     this.weaponCooldown = 0;
@@ -116,10 +119,15 @@ function PlayerShip(x, y, scale, rotation) {
     this.executeRules = function () {
         if (this.weaponCooldown > 0) this.weaponCooldown -= this.weaponRechargeSpeed;
 
-        if (keyboardState.isKeyPressed(keyboardState.key.A) && this.x > 0) this.x -= this.speed;
-        if (keyboardState.isKeyPressed(keyboardState.key.D) && this.x < viewWidth) this.x += this.speed;
-        if (keyboardState.isKeyPressed(keyboardState.key.S) && this.y < viewHeight) this.y += this.speed;
-        if (keyboardState.isKeyPressed(keyboardState.key.W) && this.y > 0) this.y -= this.speed;
+        this.dx = 0;
+        this.dy = 0;
+        if (keyboardState.isKeyPressed(keyboardState.key.A) && this.x > 0) this.dx = -this.speed;
+        if (keyboardState.isKeyPressed(keyboardState.key.D) && this.x < viewWidth) this.dx = this.speed;
+        if (keyboardState.isKeyPressed(keyboardState.key.S) && this.y < viewHeight) this.dy = this.speed;
+        if (keyboardState.isKeyPressed(keyboardState.key.W) && this.y > 0) this.dy = -this.speed;
+        this.x += this.dx;
+        this.y += this.dy;
+
         if (keyboardState.isKeyPressed(keyboardState.key.Space) && this.weaponCooldown <= 0) {
             this.weaponCooldown = 30;
             sprites.push(new PlayerMissile(this.x, this.y - 32, 4));
