@@ -320,6 +320,7 @@ function Asteroid(x, y, scale, rotation) {
     };
     this.dx = Math.random() * 4 - 2;
     this.dy = 12 - this.scale;
+    if (this.dy <= 0) this.dy = 1;
 
     this.onTakeDamage = function (damage) {
         this.dx /= 1.5;
