@@ -225,6 +225,47 @@ PlayerMissile.prototype.constructor = PlayerMissile;
 
 
 
+function Invader(x, y, scale, rotation) {
+    SpriteBase.call(this, x, y, scale, rotation);
+    this.targetY = y;
+    this.y = -100;
+    this.currentFrame = new Frame(graphicSheets.testImage, 0);
+    this.collisionClasses = ["Enemy", "HurtsPlayer"];
+    this.hitbox = {
+        type: hitboxType.Circle,
+        radius: 4
+    };
+    this.movementCounter = 0;
+    this.attackTimer = 200 + Math.random() * 500;
+    this.originalScale = this.scale;
+    this.executeRules = function () {
+        if (this.y < this.targetY) this.y += 2;
+        this.movementCounter++;
+        this.x += 10 * Math.cos(this.movementCounter / 20);
+
+        this.attackTimer -= 1;
+        if (this.attackTimer < 25) {
+            this.scale = this.originalScale * (1 + (25 - this.attackTimer) / 75);
+        }
+        if (this.attackTimer <= 0) {
+            this.scale = this.originalScale;
+            this.attackTimer = 200 + Math.random() * 500;
+            sprites.push(new TestMissile(this.x, this.y + 32, 4));
+        }
+    };
+
+    this.itemDropPool = [itemTypes.Pixelite, itemTypes.PowerCell];
+    this.onKill = function () {
+        CreateParticleEffectExplosion(this.x, this.y);
+    }
+}
+Invader.prototype = new SpriteBase();
+Invader.prototype.constructor = Invader;
+
+
+
+
+
 
 function TestEnemy(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
