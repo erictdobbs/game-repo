@@ -12,12 +12,13 @@ function SpriteBase(x, y, scale, rotation) {
     this.spriteClasses = [];
     this.shadowColor = "white";
     this.shadowBlur = 0;
-    this.inventory = {
-        commodities: {}
-    }
+    this.timeSinceHPChange = 1000;
+    this.inventory = { commodities: {} }
     this.executeRules = function () { };
     this.draw = function () {
         if (!this.active) return;
+
+        this.timeSinceHPChange += 1;
 
         gameViewContext.shadowBlur = this.shadowBlur;
         gameViewContext.shadowColor = this.shadowColor;
@@ -35,10 +36,24 @@ function SpriteBase(x, y, scale, rotation) {
         }
         if (this.shield != null) this.shield.draw();
 
-
+        if (this.spriteClasses.indexOf("Enemy") != -1) {
+            var healthBarWidth = 48;
+            var healthBarHeight = 4;
+            var healthBarX = this.x - healthBarWidth / 2;
+            var healthBarY = this.y - (this.hitbox.radius + 2) * this.scale - 4;
+            var hpRatio = this.HP / this.maxHP;
+            var healthBarOpacity = 3 - this.timeSinceHPChange / 50;
+            if (healthBarOpacity > 1) healthBarOpacity = 1.0;
+            if (healthBarOpacity < 0) healthBarOpacity = 0;
+            if (healthBarOpacity < 0.4 && this.HP != this.maxHP) healthBarOpacity = 0.4;
+            gameViewContext.fillStyle = "rgba(255,0,0," + healthBarOpacity.toString() + ")";
+            gameViewContext.fillRect(healthBarX + healthBarWidth * hpRatio, healthBarY, healthBarWidth * (1 - hpRatio), healthBarHeight);
+            gameViewContext.fillStyle = "rgba(0,255,0," + healthBarOpacity.toString() + ")";
+            gameViewContext.fillRect(healthBarX, healthBarY, healthBarWidth * hpRatio, healthBarHeight);
+        }
     }
 
-    this.maxHP = 6;
+    this.maxHP = 5;
     this.HP = 5;
     this.damage = 5;
 
@@ -71,6 +86,7 @@ function SpriteBase(x, y, scale, rotation) {
             if (!suppressIndicator)
                 logMessage(loggingSeverity.verbose, this.constructor.name + " healed for " + health + " HP");
         }
+        this.timeSinceHPChange = 0;
     }
     this.applyDamage = function (damage, suppressIndicator) {
         logMessage(loggingSeverity.information, this.constructor.name + " took " + damage + " damage");
@@ -85,6 +101,7 @@ function SpriteBase(x, y, scale, rotation) {
             if (this instanceof Shield) numberIndicators.push(new NumberIndicatorShieldDamage(this.parent, damage));
             else numberIndicators.push(new NumberIndicatorDamage(this, damage));
         }
+        this.timeSinceHPChange = 0;
     }
     this.kill = function () {
         if (this.onKill) this.onKill();
@@ -439,6 +456,8 @@ function Asteroid(x, y, scale, rotation) {
         this.y += this.dy;
         this.rotation -= Math.PI / 48;
         if (this.y > viewHeight + 64) this.kill();
+
+        this.handleCollisionDamage("PlayerAttack", "BlockedByShield");
     };
 
     this.itemDropPool = [itemTypes.MeteorOre];
