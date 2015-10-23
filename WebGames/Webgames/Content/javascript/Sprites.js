@@ -9,7 +9,7 @@ function SpriteBase(x, y, scale, rotation) {
     this.dy = 0;
     this.scale = scale === undefined ? 1 : scale;
     this.rotation = rotation === undefined ? 0 : rotation;
-    this.collisionClasses = [];
+    this.spriteClasses = [];
     this.shadowColor = "white";
     this.shadowBlur = 0;
     this.inventory = {
@@ -33,8 +33,9 @@ function SpriteBase(x, y, scale, rotation) {
 
             }
         }
-
         if (this.shield != null) this.shield.draw();
+
+
     }
 
     this.maxHP = 6;
@@ -45,7 +46,7 @@ function SpriteBase(x, y, scale, rotation) {
         var struckDamagers = getOverlappingSprites(this, category);
         for (var i = 0; i < struckDamagers.length; i++) {
             if (shieldBlockedCategory != undefined &&
-                struckDamagers[i].collisionClasses.indexOf(shieldBlockedCategory) > -1 &&
+                struckDamagers[i].spriteClasses.indexOf(shieldBlockedCategory) > -1 &&
                 this.shield != null && this.shield.HP > 0) {
 
                 var shieldHP = this.shield.HP;
@@ -62,15 +63,16 @@ function SpriteBase(x, y, scale, rotation) {
         }
     }
     
-    this.applyHealth = function (health) {
+    this.applyHealth = function (health, suppressIndicator) {
         this.HP += health;
         if (this.HP > this.maxHP) {
             this.HP = this.maxHP;
         } else {
-            logMessage(loggingSeverity.verbose, this.constructor.name + " healed for " + health + " HP");
+            if (!suppressIndicator)
+                logMessage(loggingSeverity.verbose, this.constructor.name + " healed for " + health + " HP");
         }
     }
-    this.applyDamage = function (damage) {
+    this.applyDamage = function (damage, suppressIndicator) {
         logMessage(loggingSeverity.information, this.constructor.name + " took " + damage + " damage");
         if (this.onTakeDamage) this.onTakeDamage();
 
@@ -79,6 +81,10 @@ function SpriteBase(x, y, scale, rotation) {
             this.HP = 0;
             this.kill();
         }
+        if (!suppressIndicator && this.spriteClasses.indexOf("NoIndicator") == -1) {
+            if (this instanceof Shield) numberIndicators.push(new NumberIndicatorShieldDamage(this.parent, damage));
+            else numberIndicators.push(new NumberIndicatorDamage(this, damage));
+        }
     }
     this.kill = function () {
         if (this.onKill) this.onKill();
@@ -86,7 +92,6 @@ function SpriteBase(x, y, scale, rotation) {
         SpawnLoot(this);
         this.active = false;
     }
-
 
     this.delete = function () {
         logMessage(loggingSeverity.verbose, "Deleting " + this.constructor.name + " (index " + sprites.indexOf(this) + ")");
@@ -104,7 +109,7 @@ function PlayerShip(x, y, scale, rotation) {
     this.dx = 0;
     this.dy = 0;
     this.currentFrame = new Frame(graphicSheets.PlayerShip, 0);
-    this.collisionClasses = ["Player"];
+    this.spriteClasses = ["Player"];
     this.weaponCooldown = 0;
     this.weaponRechargeSpeed = 1;
     this.hitbox = {
@@ -202,9 +207,10 @@ Shield.prototype.constructor = Shield;
 
 function PlayerMissile(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
-    this.currentFrame = new Frame(graphicSheets.Projectiles, 2);
-    this.collisionClasses = ["PlayerAttack"];
+    this.currentFrame = new Frame(graphicSheets.Projectiles, 1);
+    this.spriteClasses = ["PlayerAttack", "BlockedByShield", "NoIndicator"];
     this.shadowBlur = 20;
+    this.rotation = Math.PI / 2;
     this.hitbox = {
         type: hitboxType.Circle,
         radius: 1
@@ -215,8 +221,6 @@ function PlayerMissile(x, y, scale, rotation) {
     this.executeRules = function () {
         this.y -= this.dy;
         if (this.y < -64) this.kill();
-
-        this.handleCollisionDamage("Enemy");
     };
 }
 PlayerMissile.prototype = new SpriteBase();
@@ -230,7 +234,7 @@ function Invader(x, y, scale, rotation) {
     this.targetY = y;
     this.y = -100;
     this.currentFrame = new Frame(graphicSheets.testImage, 0);
-    this.collisionClasses = ["Enemy", "HurtsPlayer"];
+    this.spriteClasses = ["Enemy", "HurtsPlayer"];
     this.hitbox = {
         type: hitboxType.Circle,
         radius: 4
@@ -241,7 +245,7 @@ function Invader(x, y, scale, rotation) {
     this.executeRules = function () {
         if (this.y < this.targetY) this.y += 2;
         this.movementCounter++;
-        this.x += 10 * Math.cos(this.movementCounter / 20);
+        this.x += 4 * Math.cos(this.movementCounter / 18);
 
         this.attackTimer -= 1;
         if (this.attackTimer < 25) {
@@ -250,8 +254,10 @@ function Invader(x, y, scale, rotation) {
         if (this.attackTimer <= 0) {
             this.scale = this.originalScale;
             this.attackTimer = 200 + Math.random() * 500;
-            sprites.push(new TestMissile(this.x, this.y + 32, 4));
+            sprites.push(new SpriteLaser(this.x, this.y + 32, 4));
         }
+
+        this.handleCollisionDamage("PlayerAttack", "BlockedByShield");
     };
 
     this.itemDropPool = [itemTypes.Pixelite, itemTypes.PowerCell];
@@ -270,7 +276,7 @@ Invader.prototype.constructor = Invader;
 function TestEnemy(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
     this.currentFrame = new Frame(graphicSheets.testImage, 0);
-    this.collisionClasses = ["Enemy", "HurtsPlayer"];
+    this.spriteClasses = ["Enemy", "HurtsPlayer"];
     this.hitbox = {
         type: hitboxType.Circle,
         radius: 4
@@ -289,8 +295,9 @@ function TestEnemy(x, y, scale, rotation) {
         if (this.attackTimer <= 0) {
             this.scale = this.originalScale;
             this.attackTimer = 200 + Math.random() * 500;
-            sprites.push(new TestMissile(this.x, this.y + 32, 4));
+            sprites.push(new EnemyBullet(this.x, this.y + 32, 4));
         }
+        this.handleCollisionDamage("PlayerAttack", "BlockedByShield");
     };
 
     this.itemDropPool = [itemTypes.Pixelite, itemTypes.PowerCell];
@@ -306,13 +313,14 @@ TestEnemy.prototype.constructor = TestEnemy;
 function TestEnemy2(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
     this.currentFrame = new Frame(graphicSheets.testImage, 1);
-    this.collisionClasses = ["Enemy", "HurtsPlayer"];
+    this.spriteClasses = ["Enemy", "HurtsPlayer"];
     this.hitbox = {
         type: hitboxType.Circle,
         radius: 4
     };
     this.executeRules = function () {
         this.rotation -= Math.PI / 48;
+        this.handleCollisionDamage("PlayerAttack", "BlockedByShield");
     };
 
     this.itemDropPool = [itemTypes.Pixelite];
@@ -325,11 +333,12 @@ TestEnemy2.prototype.constructor = TestEnemy2;
 
 
 
-function TestMissile(x, y, scale, rotation) {
+function EnemyBullet(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
-    this.currentFrame = new Frame(graphicSheets.Projectiles, 3);
-    this.collisionClasses = ["EnemyAttack", "HurtsPlayer", "BlockedByShield"];
+    this.currentFrame = new Frame(graphicSheets.Projectiles, 0);
+    this.spriteClasses = ["EnemyAttack", "HurtsPlayer", "BlockedByShield", "NoIndicator"];
     this.shadowBlur = 20;
+    this.rotation = Math.PI/2;
     this.hitbox = {
         type: hitboxType.Circle,
         radius: 1
@@ -341,8 +350,65 @@ function TestMissile(x, y, scale, rotation) {
         if (this.y > viewHeight + 64) this.kill();
     };
 }
-TestMissile.prototype = new SpriteBase();
-TestMissile.prototype.constructor = TestMissile;
+EnemyBullet.prototype = new SpriteBase();
+EnemyBullet.prototype.constructor = EnemyBullet;
+
+
+
+function SpriteMissile(x, y, scale, rotation) {
+    SpriteBase.call(this, x, y, scale, rotation);
+    this.currentFrame = new Frame(graphicSheets.Projectiles, 3);
+    this.spriteClasses = ["EnemyAttack", "HurtsPlayer", "BlockedByShield", "NoIndicator"];
+    this.shadowBlur = 20;
+    this.rotation = 3 * Math.PI / 2;
+    this.velocity = 4;
+    this.rotationSpeed = 0.5 * Math.PI / 180;
+    this.target = player;
+    this.hitbox = {
+        type: hitboxType.Circle,
+        radius: 1
+    };
+    this.damage = 5;
+    
+    this.executeRules = function () {
+        var targetThetaOffset = (Math.atan2(-(this.target.y - this.y), this.target.x - this.x) - this.rotation - Math.PI/2) % (Math.PI * 2);
+        var targetToLeft = (targetThetaOffset + Math.PI * 2) % Math.PI * 2 < Math.PI;
+        this.rotation += -(targetToLeft ? 1 : -1) * this.rotationSpeed;
+        this.dy = -this.velocity * Math.sin(this.rotation);
+        this.dx = this.velocity * Math.cos(this.rotation);
+        this.y += this.dy;
+        this.x += this.dx;
+        if (this.y > viewHeight + 64) this.kill();
+    };
+}
+SpriteMissile.prototype = new SpriteBase();
+SpriteMissile.prototype.constructor = SpriteMissile;
+
+
+
+
+
+function SpriteLaser(x, y, scale, rotation) {
+    SpriteBase.call(this, x, y, scale, rotation);
+    this.currentFrame = new Frame(graphicSheets.Projectiles, 2);
+    this.spriteClasses = ["EnemyAttack", "HurtsPlayer", "BlockedByShield", "NoIndicator"];
+    this.shadowBlur = 20;
+    this.rotation = Math.PI / 2;
+    this.hitbox = {
+        type: hitboxType.Circle,
+        radius: 1
+    };
+    this.damage = 2;
+    this.dy = 12;
+    this.executeRules = function () {
+        this.y += this.dy;
+        if (this.y > viewHeight + 64) this.kill();
+    };
+}
+SpriteLaser.prototype = new SpriteBase();
+SpriteLaser.prototype.constructor = SpriteLaser;
+
+
 
 
 
@@ -354,7 +420,7 @@ function Asteroid(x, y, scale, rotation) {
     this.damage = parseInt(scale / 2);
     this.HP = scale;
     this.maxHP = scale;
-    this.collisionClasses = ["Enemy", "HurtsPlayer", "BlockedByShield"];
+    this.spriteClasses = ["Enemy", "HurtsPlayer", "BlockedByShield"];
     this.hitbox = {
         type: hitboxType.Circle,
         radius: 4

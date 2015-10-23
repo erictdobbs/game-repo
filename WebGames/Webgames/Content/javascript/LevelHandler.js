@@ -139,11 +139,11 @@ function WaveEventWaitForWaveSpritesCleared(delay) {
 
 
 function SampleLevel() {
-    var wave1 = new WaveBase(this, "Start Wave", [
-        new WaveEventSpawnSprite(new Invader(300, 80, 8), 0),
-        new WaveEventSpawnSprite(new Invader(400, 80, 8), 0),
-        new WaveEventSpawnSprite(new Invader(500, 80, 8), 0)
-    ]);
+    var wave1 = new WaveBase(this, "Start Wave", []);
+    for (var i = 0; i < 9; i++) wave1.waveEvents.push(new WaveEventSpawnSprite(new Invader(100 + 75 * i, 80, 6), 112));
+    for (var i = 0; i < 8; i++) wave1.waveEvents.push(new WaveEventSpawnSprite(new Invader(137 + 75 * i, 155, 6), 56));
+    for (var i = 0; i < 9; i++) wave1.waveEvents.push(new WaveEventSpawnSprite(new Invader(100 + 75 * i, 230, 6), 0));
+
     var wave2 = new WaveBase(this, "Asteroid Wave", [
         new WaveEventSpawnSprite(new Asteroid(200, -100, 7), 50),
         new WaveEventSpawnSprite(new Asteroid(600, -100, 7), 150),

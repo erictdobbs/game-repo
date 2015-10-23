@@ -18,7 +18,7 @@ function getOverlappingSprites(sprite, classToTest) {
     var ret = [];
     for (var i = 0; i < sprites.length; i++) {
         if (sprites[i].active) {
-            if (sprites[i].collisionClasses.indexOf(classToTest) > -1) {
+            if (sprites[i].spriteClasses.indexOf(classToTest) > -1) {
                 if (doHitboxesOverlap(sprite, sprites[i])) {
                     ret.push(sprites[i]);
                 }

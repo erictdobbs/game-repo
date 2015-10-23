@@ -1,7 +1,7 @@
 ﻿
 function ItemDrop(x, y, amount) {
     SpriteBase.call(this, x, y, 2, 0);
-    this.collisionClasses = ["ItemDrop"];
+    this.spriteClasses = ["ItemDrop"];
     this.hitbox = {
         type: hitboxType.Circle,
         radius: 8

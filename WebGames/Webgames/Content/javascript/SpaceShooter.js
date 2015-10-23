@@ -110,18 +110,6 @@ function initializeSprites() {
     meters.push(shieldMeter);
     meters.push(hpMeter);
 
-    //sprites.push(new TestEnemy(200, 80, 8));
-    //sprites.push(new TestEnemy(300, 80, 8));
-    //sprites.push(new TestEnemy(400, 80, 8));
-    //sprites.push(new TestEnemy(500, 80, 8));
-    //sprites.push(new TestEnemy(600, 80, 8));
-
-    //sprites.push(new TestEnemy2(80, 240, 16));
-    //sprites.push(new TestEnemy2(240, 240, 16));
-    //sprites.push(new TestEnemy2(400, 240, 16));
-    //sprites.push(new TestEnemy2(560, 240, 16));
-    //sprites.push(new TestEnemy2(720, 240, 16));
-
     //setInterval(function () {
     //    if (Math.random() < 0.20)
     //        sprites.push(new Asteroid(200 + 400 * Math.random(), -100, 4 + 6 * Math.random()));
@@ -145,12 +133,14 @@ function testDraw() {
     gameViewContext.fillStyle = "white";
     gameViewContext.fillRect(Math.random() * viewWidth, Math.random() * viewHeight, 5, 5);
 
-    level.update();
+    if (level) level.update();
 
     for (var i = 0; i < particleEffects.length; i++)
         particleEffects[i].draw();
     for (var i = 0; i < particleEffectGenerators.length; i++)
         particleEffectGenerators[i].update();
+    for (var i = 0; i < numberIndicators.length; i++)
+        numberIndicators[i].update();
 
     for (var i = 0; i < sprites.length; i++)
         if (sprites[i] && sprites[i].active)
@@ -160,6 +150,8 @@ function testDraw() {
             sprites[i].delete();
     for (var i = 0; i < sprites.length; i++)
         sprites[i].draw();
+    for (var i = 0; i < numberIndicators.length; i++)
+        numberIndicators[i].draw();
     for (var i = 0; i < meters.length; i++)
         meters[i].draw();
     DrawInventory(player);

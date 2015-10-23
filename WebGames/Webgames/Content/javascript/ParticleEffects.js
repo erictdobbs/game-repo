@@ -9,12 +9,9 @@ function ParticleEffectBase(x, y, dx, dy, scale, rotation, opacity) {
     this.rotation = rotation;
     this.opacity = opacity;
     this.draw = function (x, y, scale, rotation, opacity) { };
-    this.color = { r: 255, g: 255, b: 255, a: 1.0 };
+    this.color = new Color(255, 255, 255, 1.0);
     this.getColor = function () {
-        return "rgba(" + parseInt(this.color.r) +
-            "," + parseInt(this.color.g) +
-            "," + parseInt(this.color.b) +
-            "," + this.color.a + ")";
+        return this.color.toString();
     }
     this.delete = function () {
         logMessage(loggingSeverity.verbose, "Deleting " + this.constructor.name + " (index " + particleEffects.indexOf(this) + ")");

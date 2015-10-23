@@ -5,7 +5,7 @@ function PowerUpBase(x, y, scale, rotation, shadowColor) {
     SpriteBase.call(this, x, y, scale, rotation);
     this.dy = 3;
     this.shadowColor = shadowColor;
-    this.collisionClasses = ["PowerUp"];
+    this.spriteClasses = ["PowerUp"];
     this.hitbox = {
         type: hitboxType.Circle,
         radius: 8
