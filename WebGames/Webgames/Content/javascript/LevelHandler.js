@@ -140,9 +140,16 @@ function WaveEventWaitForWaveSpritesCleared(delay) {
 
 function SampleLevel() {
     var wave1 = new WaveBase(this, "Start Wave", []);
-    for (var i = 0; i < 9; i++) wave1.waveEvents.push(new WaveEventSpawnSprite(new Invader(100 + 75 * i, 80, 6), 112));
-    for (var i = 0; i < 8; i++) wave1.waveEvents.push(new WaveEventSpawnSprite(new Invader(137 + 75 * i, 155, 6), 56));
-    for (var i = 0; i < 9; i++) wave1.waveEvents.push(new WaveEventSpawnSprite(new Invader(100 + 75 * i, 230, 6), 0));
+    //wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvaderSniper(50, player), 0));
+    //wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvaderTurret(300, 300, player), 0));
+    //wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvaderBulwark(300, 200), 0));
+    //wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvaderGarage(300, 200), 0));
+    //for (var i = 0; i < 9; i++) wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvaderTurret(100 + 75 * i, 80, player), 0));
+    //for (var i = 0; i < 9; i++) wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvaderTurret(100 + 75 * i, 155, player), 0));
+    //for (var i = 0; i < 9; i++) wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvaderTurret(100 + 75 * i, 230, player), 0));
+    for (var i = 0; i < 9; i++) wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvader(100 + 75 * i, 80, 6), 112));
+    for (var i = 0; i < 8; i++) wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvader(137 + 75 * i, 155, 6), 56));
+    for (var i = 0; i < 9; i++) wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvader(100 + 75 * i, 230, 6), 0));
 
     var wave2 = new WaveBase(this, "Asteroid Wave", [
         new WaveEventSpawnSprite(new Asteroid(200, -100, 7), 50),
@@ -161,12 +168,7 @@ function SampleLevel() {
         new WaveEventSpawnSprite(new Asteroid(400, -100, 10), 950)
     ]);
     var wave3 = new WaveBase(this, "Last Wave", [
-        new WaveEventSpawnSprite(new TestEnemy2(80, 240, 16),0),
-        new WaveEventSpawnSprite(new TestEnemy2(240, 240, 16), 0),
-        new WaveEventWaitForWaveSpritesCleared(10),
-        new WaveEventSpawnSprite(new TestEnemy2(400, 240, 16),20),
-        new WaveEventSpawnSprite(new TestEnemy2(560, 240, 16),20),
-        new WaveEventSpawnSprite(new TestEnemy2(720, 240, 16),20),
+        new WaveEventSpawnSprite(new Asteroid(200, -100, 7), 50),
     ]);
 
     var waves = [wave1, wave2 ,wave3];

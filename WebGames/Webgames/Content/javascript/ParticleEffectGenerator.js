@@ -41,3 +41,17 @@ function ParticleEffectSmokeGenerator(parent, dx, dy) {
 }
 ParticleEffectSmokeGenerator.prototype = new ParticleEffectGenerator();
 ParticleEffectSmokeGenerator.prototype.constructor = ParticleEffectSmokeGenerator;
+
+
+function ParticleEffectMissileSmokeGenerator(parent, dx, dy) {
+    ParticleEffectGenerator.call(this, parent, 5);
+    this.dx = dx;
+    this.dy = dy;
+    this.getNewParticle = function () {
+        var dx = (-this.parent.dx + Math.random() - 0.5) * 0.5;
+        var dy = (-this.parent.dy + Math.random() - 0.5) * 0.5;
+        return new ParticleEffectSmokeFragment(this.parent.x, this.parent.y, dx, dy, 5, 0, 1)
+    }
+}
+ParticleEffectSmokeGenerator.prototype = new ParticleEffectGenerator();
+ParticleEffectSmokeGenerator.prototype.constructor = ParticleEffectSmokeGenerator;

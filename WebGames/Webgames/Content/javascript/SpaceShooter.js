@@ -95,8 +95,8 @@ function cycleMouseInfo() {
 var level;
 
 function initializeSprites() {
+    player = new PlayerShip(400, 500, 4);
     level = new SampleLevel();
-    player = new PlayerShip(400, 500, 4)
     sprites.push(player);
 
     var hpMeter = new MeterBase(400, 585, 500, 10, "green",

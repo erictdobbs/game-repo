@@ -1,8 +1,10 @@
 ﻿var numberIndicators = [];
 
 function NumberIndicator(parent, value) {
+    this.font = "20px Arial";
+    this.textWidth = gameViewContext.measureText(value).width;
     if (parent) {
-        this.x = parent.x;
+        this.x = parent.x - this.textWidth/2;
         this.y = parent.y;
     }
     this.value = value;
@@ -44,6 +46,26 @@ function NumberIndicatorShieldDamage(parent, value) {
     this.update = function () {
         this.color.a -= 0.03;
         if (this.color.a <= 0) this.delete();
+    }
+}
+NumberIndicatorShieldDamage.prototype = new NumberIndicator();
+NumberIndicatorShieldDamage.prototype.constructor = NumberIndicatorShieldDamage;
+
+
+
+
+function NumberIndicatorHeal(parent, value) {
+    NumberIndicator.call(this, parent, value);
+    this.color = new Color(0, 255, 0, 0.0);
+    this.y = parent.y;
+    this.targetY = parent.y - 50;
+    this.counter = 0;
+    this.update = function () {
+        this.color.a += 0.03;
+        if (this.color.a >= 1.0) this.color.a = 1.0;
+        if (this.targetY < this.y) this.y -= 1;
+        else this.counter += 1;
+        if (this.counter > 20) this.delete();
     }
 }
 NumberIndicatorShieldDamage.prototype = new NumberIndicator();

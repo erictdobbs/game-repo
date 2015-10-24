@@ -87,6 +87,9 @@ function SpriteBase(x, y, scale, rotation) {
                 logMessage(loggingSeverity.verbose, this.constructor.name + " healed for " + health + " HP");
         }
         this.timeSinceHPChange = 0;
+        if (!suppressIndicator) {
+            numberIndicators.push(new NumberIndicatorHeal(this, parseInt(health)));
+        }
     }
     this.applyDamage = function (damage, suppressIndicator) {
         logMessage(loggingSeverity.information, this.constructor.name + " took " + damage + " damage");
@@ -98,8 +101,8 @@ function SpriteBase(x, y, scale, rotation) {
             this.kill();
         }
         if (!suppressIndicator && this.spriteClasses.indexOf("NoIndicator") == -1) {
-            if (this instanceof Shield) numberIndicators.push(new NumberIndicatorShieldDamage(this.parent, damage));
-            else numberIndicators.push(new NumberIndicatorDamage(this, damage));
+            if (this instanceof Shield) numberIndicators.push(new NumberIndicatorShieldDamage(this.parent, parseInt(damage)));
+            else numberIndicators.push(new NumberIndicatorDamage(this, parseInt(damage)));
         }
         this.timeSinceHPChange = 0;
     }
@@ -133,7 +136,7 @@ function PlayerShip(x, y, scale, rotation) {
         type: hitboxType.Circle,
         radius: 8
     };
-    this.shield = new Shield(this, 10, "cyan");
+    this.shield = new Shield(this, 10, new Color(0, 255, 255, 1.0));
     this.shieldRechargeRate = 0.01;
     this.speed = 5;
     this.maxHP = 20;
@@ -146,7 +149,7 @@ function PlayerShip(x, y, scale, rotation) {
         if (keyboardState.isKeyPressed(keyboardState.key.A) && this.x > 0) this.dx = -this.speed;
         if (keyboardState.isKeyPressed(keyboardState.key.D) && this.x < viewWidth) this.dx = this.speed;
         if (keyboardState.isKeyPressed(keyboardState.key.S) && this.y < viewHeight) this.dy = this.speed;
-        if (keyboardState.isKeyPressed(keyboardState.key.W) && this.y > 0) this.dy = -this.speed;
+        if (keyboardState.isKeyPressed(keyboardState.key.W) && this.y > viewHeight * 0.6) this.dy = -this.speed;
         this.x += this.dx;
         this.y += this.dy;
 
@@ -155,7 +158,7 @@ function PlayerShip(x, y, scale, rotation) {
             sprites.push(new PlayerMissile(this.x, this.y - 32, 4));
         }
 
-        if (this.shield.HP > 0) this.shield.applyHealth(this.shieldRechargeRate);
+        if (this.shield.HP > 0) this.shield.applyHealth(this.shieldRechargeRate, true);
 
         this.handleCollisionDamage("HurtsPlayer", "BlockedByShield");
     };
@@ -190,7 +193,8 @@ function Shield(parent, hp, color) {
         var radius = this.parent.currentFrame.graphicSheet.cellHeight * this.parent.scale / 1.5;
         gameViewContext.beginPath();
         gameViewContext.arc(x, y, radius, 0, 2 * Math.PI);
-        gameViewContext.strokeStyle = 'rgba(0,255,255,0.3)';
+        this.color.a = 0.3;
+        gameViewContext.strokeStyle = this.color.toString();
         gameViewContext.closePath();
         gameViewContext.stroke();
 
@@ -199,10 +203,10 @@ function Shield(parent, hp, color) {
         var outerRadius = this.shieldTimer;
         var gradient = gameViewContext.createRadialGradient(x, y - radius, innerRadius, x, y - radius, outerRadius);
 
-        // TODO: make color work from object's color value
-        gradient.addColorStop(0, 'rgba(128,128,255,0)');
-        gradient.addColorStop(0.9, 'rgba(128,255,255,1)');
-        gradient.addColorStop(1, 'rgba(128,255,255,0)');
+        this.color.a = 1.0;
+        gradient.addColorStop(0, 'rgba(0,0,0,0)');
+        gradient.addColorStop(0.9, this.color.toString());
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
         gameViewContext.beginPath();
         gameViewContext.arc(x, y, radius, 0, 2 * Math.PI);
         gameViewContext.fillStyle = gradient;
@@ -218,7 +222,6 @@ function Shield(parent, hp, color) {
 }
 Shield.prototype = new SpriteBase();
 Shield.prototype.constructor = Shield;
-
 
 
 
@@ -245,13 +248,12 @@ PlayerMissile.prototype.constructor = PlayerMissile;
 
 
 
-
-function Invader(x, y, scale, rotation) {
+function SpriteInvader(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
     this.targetY = y;
     this.y = -100;
-    this.currentFrame = new Frame(graphicSheets.testImage, 0);
-    this.spriteClasses = ["Enemy", "HurtsPlayer"];
+    this.currentFrame = new Frame(graphicSheets.Invaders, 0);
+    this.spriteClasses = ["EnemyShip", "Enemy", "HurtsPlayer"];
     this.hitbox = {
         type: hitboxType.Circle,
         radius: 4
@@ -271,72 +273,131 @@ function Invader(x, y, scale, rotation) {
         if (this.attackTimer <= 0) {
             this.scale = this.originalScale;
             this.attackTimer = 200 + Math.random() * 500;
+            sprites.push(new SpriteEnemyBullet(this.x, this.y + 32, 4));
+        }
+
+        this.handleCollisionDamage("PlayerAttack", "BlockedByShield");
+    };
+
+    this.itemDropPool = [itemTypes.Pixelite, itemTypes.PowerCell];
+    this.onKill = function () {
+        CreateParticleEffectExplosion(this.x, this.y);
+    }
+}
+SpriteInvader.prototype = new SpriteBase();
+SpriteInvader.prototype.constructor = SpriteInvader;
+
+
+
+function SpriteInvaderSniper(y, target) {
+    SpriteBase.call(this, -100, y, 6, 0);
+    this.target = target;
+    this.shield = new Shield(this, 10, new Color(255, 255, 0, 1.0));
+    this.currentFrame = new Frame(graphicSheets.Invaders, 4);
+    this.spriteClasses = ["EnemyShip", "Enemy", "HurtsPlayer"];
+    this.hitbox = {
+        type: hitboxType.Circle,
+        radius: 4
+    };
+    this.acceleration = 0.5;
+    this.maxSpeed = 5;
+    this.attackTimer = 300 + Math.random() * 500;
+    this.executeRules = function () {
+        if (this.x > this.target.x) this.dx -= this.acceleration;
+        else this.dx += this.acceleration;
+        if (this.dx > this.maxSpeed) this.dx = this.maxSpeed;
+        if (this.dx < -this.maxSpeed) this.dx = -this.maxSpeed;
+
+        this.attackTimer -= 1;
+        if (this.attackTimer > 25) this.x += this.dx;
+
+        if (this.attackTimer <= 0) {
+            this.attackTimer = 300 + Math.random() * 500;
             sprites.push(new SpriteLaser(this.x, this.y + 32, 4));
         }
 
+
         this.handleCollisionDamage("PlayerAttack", "BlockedByShield");
     };
 
-    this.itemDropPool = [itemTypes.Pixelite, itemTypes.PowerCell];
+    this.itemDropPool = [itemTypes.PowerCell];
     this.onKill = function () {
         CreateParticleEffectExplosion(this.x, this.y);
     }
 }
-Invader.prototype = new SpriteBase();
-Invader.prototype.constructor = Invader;
+SpriteInvaderSniper.prototype = new SpriteBase();
+SpriteInvaderSniper.prototype.constructor = SpriteInvaderSniper;
 
 
 
-
-
-
-function TestEnemy(x, y, scale, rotation) {
-    SpriteBase.call(this, x, y, scale, rotation);
-    this.currentFrame = new Frame(graphicSheets.testImage, 0);
-    this.spriteClasses = ["Enemy", "HurtsPlayer"];
+function SpriteInvaderTurret(x, y, target) {
+    SpriteBase.call(this, x, y, 0, 0);
+    this.target = target;
+    this.maxHP = 30;
+    this.HP = 30;
+    this.currentFrame = new Frame(graphicSheets.Invaders, 2);
+    this.spriteClasses = ["EnemyShip", "Enemy", "HurtsPlayer"];
     this.hitbox = {
         type: hitboxType.Circle,
         radius: 4
     };
-    this.movementCounter = 0;
-    this.attackTimer = 200 + Math.random() * 500;
-    this.originalScale = this.scale;
+    this.originalScale = 6;
+    this.rotationSpeed = Math.PI / 48;
+    this.attackTimer = 200 + Math.random() * 300;
     this.executeRules = function () {
-        this.movementCounter++;
-        this.x += 10 * Math.cos(this.movementCounter / 20);
+        var targetRotation = Math.atan2(-this.target.y + this.y, this.target.x - this.x) + Math.PI / 2;
+        var rotationDiff = this.rotation - targetRotation;
+        rotationDiff %= (2 * Math.PI);
+
+        if (Math.abs(rotationDiff) > 0.1) {
+            if (rotationDiff > 0) this.rotation -= this.rotationSpeed;
+            else this.rotation += this.rotationSpeed;
+        }
+
+        if (this.rotation > Math.PI) this.rotation -= 2 * Math.PI;
+        if (this.rotation < -Math.PI) this.rotation += 2 * Math.PI;
 
         this.attackTimer -= 1;
-        if (this.attackTimer < 25) {
-            this.scale = this.originalScale * (1 + (25 - this.attackTimer) / 75);
+
+        this.scale += 0.1;
+        if (this.scale > this.originalScale) this.scale = this.originalScale;
+        if (this.attackTimer < 50 && this.attackTimer != 0) {
+            this.scale = this.originalScale * (1 + Math.random() / 5);
         }
+
         if (this.attackTimer <= 0) {
-            this.scale = this.originalScale;
             this.attackTimer = 200 + Math.random() * 500;
-            sprites.push(new EnemyBullet(this.x, this.y + 32, 4));
+            sprites.push(new SpriteMissile(this.x, this.y, 4, this.rotation));
         }
+
+
         this.handleCollisionDamage("PlayerAttack", "BlockedByShield");
     };
 
-    this.itemDropPool = [itemTypes.Pixelite, itemTypes.PowerCell];
+    this.itemDropPool = [itemTypes.PowerCell];
     this.onKill = function () {
         CreateParticleEffectExplosion(this.x, this.y);
     }
 }
-TestEnemy.prototype = new SpriteBase();
-TestEnemy.prototype.constructor = TestEnemy;
+SpriteInvaderTurret.prototype = new SpriteBase();
+SpriteInvaderTurret.prototype.constructor = SpriteInvaderTurret;
 
 
 
-function TestEnemy2(x, y, scale, rotation) {
-    SpriteBase.call(this, x, y, scale, rotation);
-    this.currentFrame = new Frame(graphicSheets.testImage, 1);
-    this.spriteClasses = ["Enemy", "HurtsPlayer"];
+function SpriteInvaderBulwark(x, y) {
+    SpriteBase.call(this, -100, y, 12, 0);
+    this.maxHP = 50;
+    this.HP = 50;
+    this.targetX = x;
+    this.currentFrame = new Frame(graphicSheets.Invaders, 1);
+    this.spriteClasses = ["EnemyShip", "Enemy", "HurtsPlayer"];
     this.hitbox = {
         type: hitboxType.Circle,
         radius: 4
     };
     this.executeRules = function () {
-        this.rotation -= Math.PI / 48;
+        if (this.x < this.targetX) this.x += this.scale / 4;
+
         this.handleCollisionDamage("PlayerAttack", "BlockedByShield");
     };
 
@@ -345,12 +406,94 @@ function TestEnemy2(x, y, scale, rotation) {
         CreateParticleEffectExplosion(this.x, this.y);
     }
 }
-TestEnemy2.prototype = new SpriteBase();
-TestEnemy2.prototype.constructor = TestEnemy2;
+SpriteInvaderBulwark.prototype = new SpriteBase();
+SpriteInvaderBulwark.prototype.constructor = SpriteInvaderBulwark;
 
 
 
-function EnemyBullet(x, y, scale, rotation) {
+function SpriteInvaderGarage(x, y) {
+    SpriteBase.call(this, viewWidth + 100, y, 6, 0);
+    this.maxHP = 10;
+    this.HP = 10;
+    this.shield = new Shield(this, 20, new Color(255, 0, 255, 1.0));
+    this.targetX = x;
+    this.currentFrame = new Frame(graphicSheets.Invaders, 3);
+    this.spriteClasses = ["EnemyShip", "Enemy", "HurtsPlayer"];
+    this.hitbox = {
+        type: hitboxType.Circle,
+        radius: 4
+    };
+
+    this.attackTimer = 400 + Math.random() * 500;
+
+    this.executeRules = function () {
+        this.rotation += Math.PI / 300;
+        this.rotation += Math.PI / (this.attackTimer);
+
+        if (this.x > this.targetX) this.x -= this.scale;
+        this.attackTimer -= 1;
+        if (this.attackTimer <= 0) {
+            this.attackTimer = 400 + Math.random() * 500;
+            sprites.push(new SpriteEnemyHealthBubble(this.x, this.y, 10));
+        }
+
+        this.handleCollisionDamage("PlayerAttack", "BlockedByShield");
+    };
+
+    this.itemDropPool = [itemTypes.Pixelite];
+    this.onKill = function () {
+        CreateParticleEffectExplosion(this.x, this.y);
+    }
+}
+SpriteInvaderGarage.prototype = new SpriteBase();
+SpriteInvaderGarage.prototype.constructor = SpriteInvaderGarage;
+
+
+
+function SpriteEnemyHealthBubble(x, y, healthValue) {
+    SpriteBase.call(this, x, y, 24, 0);
+    this.spriteClasses = [];
+    this.hitbox = {
+        type: hitboxType.Circle,
+        radius: 1
+    };
+    this.targetScale = 100;
+    this.healTimer = 0;
+    this.healthValue = healthValue;
+    this.executeRules = function () {
+        if (this.scale < this.targetScale) this.scale *= 1.01;
+        if (this.scale >= this.targetScale) {
+            this.scale = this.targetScale;
+            this.healTimer += 1;
+        }
+
+        if (this.healTimer == 50) {
+            var overlappingEnemies = getOverlappingSprites(this, "EnemyShip");
+            for (var i = 0; i < overlappingEnemies.length; i++)
+                overlappingEnemies[i].applyHealth(this.healthValue);
+            this.kill();
+        }
+    };
+
+    this.draw = function () {
+        gameViewContext.beginPath();
+        gameViewContext.arc(this.x, this.y, this.scale, 0, 2 * Math.PI);
+        gameViewContext.fillStyle = "rgba(255,0,255,0.05)";
+        gameViewContext.strokeStyle = "rgba(255,0,255,1.0)";
+        gameViewContext.closePath();
+        gameViewContext.fill();
+        gameViewContext.stroke();
+    }
+}
+SpriteEnemyHealthBubble.prototype = new SpriteBase();
+SpriteEnemyHealthBubble.prototype.constructor = SpriteEnemyHealthBubble;
+
+
+
+
+
+
+function SpriteEnemyBullet(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
     this.currentFrame = new Frame(graphicSheets.Projectiles, 0);
     this.spriteClasses = ["EnemyAttack", "HurtsPlayer", "BlockedByShield", "NoIndicator"];
@@ -367,17 +510,18 @@ function EnemyBullet(x, y, scale, rotation) {
         if (this.y > viewHeight + 64) this.kill();
     };
 }
-EnemyBullet.prototype = new SpriteBase();
-EnemyBullet.prototype.constructor = EnemyBullet;
+SpriteEnemyBullet.prototype = new SpriteBase();
+SpriteEnemyBullet.prototype.constructor = SpriteEnemyBullet;
 
 
 
 function SpriteMissile(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
+    particleEffectGenerators.push(new ParticleEffectMissileSmokeGenerator(this, 0, 0));
     this.currentFrame = new Frame(graphicSheets.Projectiles, 3);
     this.spriteClasses = ["EnemyAttack", "HurtsPlayer", "BlockedByShield", "NoIndicator"];
     this.shadowBlur = 20;
-    this.rotation = 3 * Math.PI / 2;
+    this.rotation -= Math.PI / 2;
     this.velocity = 4;
     this.rotationSpeed = 0.5 * Math.PI / 180;
     this.target = player;
@@ -396,12 +540,12 @@ function SpriteMissile(x, y, scale, rotation) {
         this.y += this.dy;
         this.x += this.dx;
         if (this.y > viewHeight + 64) this.kill();
+        if (this.x > viewWidth + 64) this.kill();
+        if (this.x < -64) this.kill();
     };
 }
 SpriteMissile.prototype = new SpriteBase();
 SpriteMissile.prototype.constructor = SpriteMissile;
-
-
 
 
 
@@ -427,13 +571,9 @@ SpriteLaser.prototype.constructor = SpriteLaser;
 
 
 
-
-
-
-
 function Asteroid(x, y, scale, rotation) {
     SpriteBase.call(this, x, y, scale, rotation);
-    this.currentFrame = new Frame(graphicSheets.testImage, 2);
+    this.currentFrame = new Frame(graphicSheets.Asteroid, 0);
     this.damage = parseInt(scale / 2);
     this.HP = scale;
     this.maxHP = scale;
@@ -467,4 +607,3 @@ function Asteroid(x, y, scale, rotation) {
 }
 Asteroid.prototype = new SpriteBase();
 Asteroid.prototype.constructor = Asteroid;
-
