@@ -18,6 +18,21 @@ function initializeItemTypes() {
         constructorName: "ItemDropMeteorOre",
         frame: new Frame(graphicSheets.Items, 2)
     };
+    itemTypes.ShieldModule = {
+        name: "Shield Module",
+        constructorName: "ItemDropShieldModule",
+        frame: new Frame(graphicSheets.Items, 3)
+    };
+    itemTypes.BulwarkPanel = {
+        name: "Bulwark Panel",
+        constructorName: "ItemDropBulwarkPanel",
+        frame: new Frame(graphicSheets.Items, 4)
+    };
+    itemTypes.FuelCluster = {
+        name: "Fuel Cluster",
+        constructorName: "ItemDropFuelCluster",
+        frame: new Frame(graphicSheets.Items, 5)
+    };
 }
 
 
@@ -77,14 +92,14 @@ function DrawInventory(player) {
     var xOffset = (70 + extraWidthForExtraDigits) * (1 - DrawInventoryMapPosition(drawInventoryTimer));
 
     var itemHeight = 25;
-    var y = 200;
+    var y = viewHeight / 2;
     var x = viewWidth - 50 + xOffset;
     
 
     x -= extraWidthForExtraDigits;
 
     gameViewContext.shadowBlur = 0;
-    gameViewContext.fillStyle = "rgba(0,0,0,0.5)";
+    gameViewContext.fillStyle = "rgba(0,0,0,0.3)";
     gameViewContext.fillRect(x - 20, y, 200, itemHeight * (numberOfItems + 1));
 
     for (itemTypeName in player.inventory.commodities) {

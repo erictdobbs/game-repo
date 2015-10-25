@@ -18,6 +18,8 @@ function startGame() {
     initializeSprites();
     var gameView = document.getElementById('gameView');
 
+    gameView.addEventListener("mousedown", onMouseClick, false);
+
     gameView.onmousedown = function (e) {
         e = e || window.event;
         mouseInfo.x = e.clientX;
@@ -115,15 +117,15 @@ function initializeSprites() {
     //        sprites.push(new Asteroid(200 + 400 * Math.random(), -100, 4 + 6 * Math.random()));
     //}, 1000);
 
-    setInterval(function () {
-        if (Math.random() < 0.20) {
-            var type = parseInt(Math.random() * 4);
-            if (type == 0) sprites.push(new PowerUpRepair(200 + 400 * Math.random(), -100, 4));
-            if (type == 1) sprites.push(new PowerUpWeapon(200 + 400 * Math.random(), -100, 4));
-            if (type == 2) sprites.push(new PowerUpShield(200 + 400 * Math.random(), -100, 4));
-            if (type == 3) sprites.push(new PowerUpSpeed(200 + 400 * Math.random(), -100, 4));
-        }
-    }, 5000);
+    //setInterval(function () {
+    //    if (Math.random() < 0.20) {
+    //        var type = parseInt(Math.random() * 4);
+    //        if (type == 0) sprites.push(new PowerUpRepair(200 + 400 * Math.random(), -100, 4));
+    //        if (type == 1) sprites.push(new PowerUpWeapon(200 + 400 * Math.random(), -100, 4));
+    //        if (type == 2) sprites.push(new PowerUpShield(200 + 400 * Math.random(), -100, 4));
+    //        if (type == 3) sprites.push(new PowerUpSpeed(200 + 400 * Math.random(), -100, 4));
+    //    }
+    //}, 5000);
 }
 
 
@@ -134,6 +136,7 @@ function testDraw() {
     gameViewContext.fillRect(Math.random() * viewWidth, Math.random() * viewHeight, 5, 5);
 
     if (level) level.update();
+    if (isShopping) handleShopping();
 
     for (var i = 0; i < particleEffects.length; i++)
         particleEffects[i].draw();
@@ -154,6 +157,8 @@ function testDraw() {
         numberIndicators[i].draw();
     for (var i = 0; i < meters.length; i++)
         meters[i].draw();
+    for (var i = 0; i < buttons.length; i++)
+        buttons[i].draw();
     DrawInventory(player);
 }
 

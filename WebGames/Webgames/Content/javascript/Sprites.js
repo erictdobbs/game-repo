@@ -130,7 +130,8 @@ function PlayerShip(x, y, scale, rotation) {
     this.dy = 0;
     this.currentFrame = new Frame(graphicSheets.PlayerShip, 0);
     this.spriteClasses = ["Player"];
-    this.weaponCooldown = 0;
+    this.weaponCooldownCounter = 0;
+    this.weaponCooldown = 30;
     this.weaponRechargeSpeed = 1;
     this.hitbox = {
         type: hitboxType.Circle,
@@ -141,8 +142,12 @@ function PlayerShip(x, y, scale, rotation) {
     this.speed = 5;
     this.maxHP = 20;
     this.HP = 20;
+    this.bulletDamage = 3;
+    this.bulletSpeed = 6;
     this.executeRules = function () {
-        if (this.weaponCooldown > 0) this.weaponCooldown -= this.weaponRechargeSpeed;
+        if (isShopping) return;
+
+        if (this.weaponCooldownCounter > 0) this.weaponCooldownCounter -= this.weaponRechargeSpeed;
 
         this.dx = 0;
         this.dy = 0;
@@ -153,9 +158,9 @@ function PlayerShip(x, y, scale, rotation) {
         this.x += this.dx;
         this.y += this.dy;
 
-        if (keyboardState.isKeyPressed(keyboardState.key.Space) && this.weaponCooldown <= 0) {
-            this.weaponCooldown = 30;
-            sprites.push(new PlayerMissile(this.x, this.y - 32, 4));
+        if (keyboardState.isKeyPressed(keyboardState.key.Space) && this.weaponCooldownCounter <= 0) {
+            this.weaponCooldownCounter = this.weaponCooldown;
+            sprites.push(new PlayerMissile(this.x, this.y - 32, this.bulletSpeed, this.bulletDamage));
         }
 
         if (this.shield.HP > 0) this.shield.applyHealth(this.shieldRechargeRate, true);
@@ -225,8 +230,8 @@ Shield.prototype.constructor = Shield;
 
 
 
-function PlayerMissile(x, y, scale, rotation) {
-    SpriteBase.call(this, x, y, scale, rotation);
+function PlayerMissile(x, y, speed, damage) {
+    SpriteBase.call(this, x, y, 4, 0);
     this.currentFrame = new Frame(graphicSheets.Projectiles, 1);
     this.spriteClasses = ["PlayerAttack", "BlockedByShield", "NoIndicator"];
     this.shadowBlur = 20;
@@ -235,8 +240,8 @@ function PlayerMissile(x, y, scale, rotation) {
         type: hitboxType.Circle,
         radius: 1
     };
-    this.dy = 6;
-    this.damage = 3;
+    this.dy = speed;
+    this.damage = damage;
     this.HP = 1;
     this.executeRules = function () {
         this.y -= this.dy;
@@ -320,7 +325,7 @@ function SpriteInvaderSniper(y, target) {
         this.handleCollisionDamage("PlayerAttack", "BlockedByShield");
     };
 
-    this.itemDropPool = [itemTypes.PowerCell];
+    this.itemDropPool = [itemTypes.FuelCluster];
     this.onKill = function () {
         CreateParticleEffectExplosion(this.x, this.y);
     }
@@ -374,7 +379,7 @@ function SpriteInvaderTurret(x, y, target) {
         this.handleCollisionDamage("PlayerAttack", "BlockedByShield");
     };
 
-    this.itemDropPool = [itemTypes.PowerCell];
+    this.itemDropPool = [itemTypes.PowerCell, itemTypes.ShieldModule];
     this.onKill = function () {
         CreateParticleEffectExplosion(this.x, this.y);
     }
@@ -401,7 +406,7 @@ function SpriteInvaderBulwark(x, y) {
         this.handleCollisionDamage("PlayerAttack", "BlockedByShield");
     };
 
-    this.itemDropPool = [itemTypes.Pixelite];
+    this.itemDropPool = [itemTypes.BulwarkPanel];
     this.onKill = function () {
         CreateParticleEffectExplosion(this.x, this.y);
     }
@@ -440,7 +445,7 @@ function SpriteInvaderGarage(x, y) {
         this.handleCollisionDamage("PlayerAttack", "BlockedByShield");
     };
 
-    this.itemDropPool = [itemTypes.Pixelite];
+    this.itemDropPool = [itemTypes.ShieldModule];
     this.onKill = function () {
         CreateParticleEffectExplosion(this.x, this.y);
     }

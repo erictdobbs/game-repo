@@ -12,6 +12,7 @@
             this.waveIndex += 1;
             if (this.waveIndex >= this.waves.length) {
                 this.active = false;
+                startShopping();
             }
         }
     }

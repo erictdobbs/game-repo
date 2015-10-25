@@ -2,8 +2,8 @@
 
 function NumberIndicator(parent, value) {
     this.font = "20px Arial";
-    this.textWidth = gameViewContext.measureText(value).width;
     if (parent) {
+        this.textWidth = gameViewContext.measureText(value).width;
         this.x = parent.x - this.textWidth/2;
         this.y = parent.y;
     }

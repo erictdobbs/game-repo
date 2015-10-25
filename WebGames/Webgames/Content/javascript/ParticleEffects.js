@@ -21,31 +21,52 @@ function ParticleEffectBase(x, y, dx, dy, scale, rotation, opacity) {
 
 
 function CreateParticleEffectExplosion(x, y) {
-    particleEffects.push(new ParticleEffectExplosionFragment(x, y, 6, 6, 10, 0, 1));
-    particleEffects.push(new ParticleEffectExplosionFragment(x, y, -6, 6, 10, 0, 1));
-    particleEffects.push(new ParticleEffectExplosionFragment(x, y, 6, -6, 10, 0, 1));
-    particleEffects.push(new ParticleEffectExplosionFragment(x, y, -6, -6, 10, 0, 1));
-    particleEffects.push(new ParticleEffectExplosionFragment(x, y, 3, 3, 15, 0, 1));
-    particleEffects.push(new ParticleEffectExplosionFragment(x, y, -3, 3, 15, 0, 1));
-    particleEffects.push(new ParticleEffectExplosionFragment(x, y, 3, -3, 15, 0, 1));
-    particleEffects.push(new ParticleEffectExplosionFragment(x, y, -3, -3, 15, 0, 1));
+    particleEffects.push(new ParticleEffectExplosionFragment(x, y, 6, 6, 10, 0, 1, 0.95, 0.95));
+    particleEffects.push(new ParticleEffectExplosionFragment(x, y, -6, 6, 10, 0, 1, 0.95, 0.95));
+    particleEffects.push(new ParticleEffectExplosionFragment(x, y, 6, -6, 10, 0, 1, 0.95, 0.95));
+    particleEffects.push(new ParticleEffectExplosionFragment(x, y, -6, -6, 10, 0, 1, 0.95, 0.95));
+    particleEffects.push(new ParticleEffectExplosionFragment(x, y, 3, 3, 15, 0, 1, 0.95, 0.95));
+    particleEffects.push(new ParticleEffectExplosionFragment(x, y, -3, 3, 15, 0, 1, 0.95, 0.95));
+    particleEffects.push(new ParticleEffectExplosionFragment(x, y, 3, -3, 15, 0, 1, 0.95, 0.95));
+    particleEffects.push(new ParticleEffectExplosionFragment(x, y, -3, -3, 15, 0, 1, 0.95, 0.95));
 }
 
-function ParticleEffectExplosionFragment(x, y, dx, dy, scale, rotation, opacity) {
+
+function CreateParticleEffectSparkle(x, y) {
+    for (var i = 0; i < 16; i++) {
+        var newParticle = new ParticleEffectExplosionFragment(x, y,
+            12 * (Math.random() - 0.5), 12 * (Math.random() - 0.5), 2, 0, 1, 1.05, 0.9);
+        newParticle.color = new Color(255, 255, 0, 1.0);
+        particleEffects.push(newParticle);
+    }
+}
+function CreateParticleEffectSparkleRange(x, y, width, height) {
+    for (var i = 0; i < 64; i++) {
+        var newParticle = new ParticleEffectExplosionFragment(x + Math.random() * width, y + Math.random() * height,
+            6 * (Math.random() - 0.5), 6 * (Math.random() - 0.5), 2, 0, 1, 1.05, 0.9);
+        newParticle.color = new Color(255, 255, 0, 1.0);
+        particleEffects.push(newParticle);
+    }
+}
+
+function ParticleEffectExplosionFragment(x, y, dx, dy, scale, rotation, opacity, dScale, dA) {
     ParticleEffectBase.call(this, x, y, dx, dy, scale, rotation, opacity);
     this.counter = 0;
+    this.dScale = dScale;
+    this.dA = dA;
     this.draw = function () {
         this.counter += 1;
         this.x += this.dx;
         this.y += this.dy;
         this.dx *= 0.95;
         this.dy *= 0.95;
-        this.scale *= 0.95;
-        this.color.a *= 0.95;
+        this.scale *= this.dScale;
+        this.color.a *= this.dA;
         gameViewContext.shadowBlur = 0;
         gameViewContext.fillStyle = this.getColor();
         gameViewContext.fillRect(this.x - this.scale, this.y - this.scale, this.scale * 2, this.scale * 2);
         if (this.scale < 1) this.delete();
+        if (this.scale > 20) this.delete();
     }
 }
 ParticleEffectExplosionFragment.prototype = new ParticleEffectBase();
@@ -62,7 +83,7 @@ function ParticleEffectSmokeFragment(x, y, dx, dy, scale, rotation, opacity) {
         this.counter += 1;
         this.x += this.dx;
         this.y += this.dy;
-        this.scale += 0.1;
+        this.scale *= 1.01;
         this.color.a *= 0.98;
         this.color.r *= 0.98;
         this.color.g *= 0.98;

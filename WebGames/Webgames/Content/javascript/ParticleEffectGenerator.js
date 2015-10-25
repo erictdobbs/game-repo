@@ -34,9 +34,9 @@ function ParticleEffectSmokeGenerator(parent, dx, dy) {
     this.dx = dx;
     this.dy = dy;
     this.getNewParticle = function () {
-        var dx = this.dx + Math.random() - 0.5;
-        var dy = this.dy + Math.random() - 0.5;
-        return new ParticleEffectSmokeFragment(this.parent.x, this.parent.y + this.parent.scale * 5, dx, dy, 5, 0, 1)
+        var dx = (this.dx + Math.random() - 0.5) * this.parent.scale / 4;
+        var dy = (this.dy + Math.random() - 0.5) * this.parent.scale / 4;
+        return new ParticleEffectSmokeFragment(this.parent.x, this.parent.y + this.parent.scale * 5, dx, dy, this.parent.scale * 1.25, 0, 1)
     }
 }
 ParticleEffectSmokeGenerator.prototype = new ParticleEffectGenerator();

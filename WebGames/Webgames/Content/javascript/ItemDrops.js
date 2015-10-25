@@ -59,3 +59,33 @@ function ItemDropMeteorOre(amount) {
 ItemDropMeteorOre.prototype = new ItemDrop();
 ItemDropMeteorOre.prototype.constructor = ItemDropMeteorOre;
 
+
+
+
+function ItemDropShieldModule(amount) {
+    ItemDrop.call(this, 0, 0, amount);
+    this.currentFrame = new Frame(graphicSheets.Items, 3);
+}
+ItemDropShieldModule.prototype = new ItemDrop();
+ItemDropShieldModule.prototype.constructor = ItemDropShieldModule;
+
+
+
+
+function ItemDropBulwarkPanel(amount) {
+    ItemDrop.call(this, 0, 0, amount);
+    this.currentFrame = new Frame(graphicSheets.Items, 4);
+}
+ItemDropBulwarkPanel.prototype = new ItemDrop();
+ItemDropBulwarkPanel.prototype.constructor = ItemDropBulwarkPanel;
+
+
+
+
+function ItemDropFuelCluster(amount) {
+    ItemDrop.call(this, 0, 0, amount);
+    this.currentFrame = new Frame(graphicSheets.Items, 5);
+}
+ItemDropFuelCluster.prototype = new ItemDrop();
+ItemDropFuelCluster.prototype.constructor = ItemDropFuelCluster;
+
