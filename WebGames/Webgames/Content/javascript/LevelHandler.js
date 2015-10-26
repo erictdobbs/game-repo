@@ -45,7 +45,7 @@ function WaveBase(level, name, waveEvents) {
     this.name = name;
     this.stage = waveStage.intro;
     this.waveEvents = waveEvents;
-    this.latestDelay = Math.max.apply(Math, waveEvents.map(function (x) { return x.delay }));
+    if (waveEvents) this.latestDelay = Math.max.apply(Math, waveEvents.map(function (x) { return x.delay }));
 
     this.intro = function () {
         var width = 400;
@@ -139,41 +139,141 @@ function WaveEventWaitForWaveSpritesCleared(delay) {
 }
 
 
-function SampleLevel() {
-    var wave1 = new WaveBase(this, "Start Wave", []);
-    //wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvaderSniper(50, player), 0));
-    //wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvaderTurret(300, 300, player), 0));
-    //wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvaderBulwark(300, 200), 0));
-    //wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvaderGarage(300, 200), 0));
-    //for (var i = 0; i < 9; i++) wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvaderTurret(100 + 75 * i, 80, player), 0));
-    //for (var i = 0; i < 9; i++) wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvaderTurret(100 + 75 * i, 155, player), 0));
-    //for (var i = 0; i < 9; i++) wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvaderTurret(100 + 75 * i, 230, player), 0));
-    for (var i = 0; i < 9; i++) wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvader(100 + 75 * i, 80, 6), 112));
-    for (var i = 0; i < 8; i++) wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvader(137 + 75 * i, 155, 6), 56));
-    for (var i = 0; i < 9; i++) wave1.waveEvents.push(new WaveEventSpawnSprite(new SpriteInvader(100 + 75 * i, 230, 6), 0));
-
-    var wave2 = new WaveBase(this, "Asteroid Wave", [
-        new WaveEventSpawnSprite(new Asteroid(200, -100, 7), 50),
-        new WaveEventSpawnSprite(new Asteroid(600, -100, 7), 150),
-        new WaveEventSpawnSprite(new Asteroid(400, -100, 7), 250),
-        new WaveEventSpawnSprite(new Asteroid(200, -100, 5), 350),
-        new WaveEventSpawnSprite(new Asteroid(600, -100, 5), 350),
-        new WaveEventSpawnSprite(new Asteroid(300, -100, 4), 450),
-        new WaveEventSpawnSprite(new Asteroid(400, -100, 4), 450),
-        new WaveEventSpawnSprite(new Asteroid(500, -100, 4), 450),
-        new WaveEventSpawnSprite(new Asteroid(200, -100, 6), 650),
-        new WaveEventSpawnSprite(new Asteroid(300, -100, 6), 650),
-        new WaveEventSpawnSprite(new Asteroid(400, -100, 6), 650),
-        new WaveEventSpawnSprite(new Asteroid(500, -100, 6), 650),
-        new WaveEventSpawnSprite(new Asteroid(600, -100, 6), 650),
-        new WaveEventSpawnSprite(new Asteroid(400, -100, 10), 950)
-    ]);
-    var wave3 = new WaveBase(this, "Last Wave", [
-        new WaveEventSpawnSprite(new Asteroid(200, -100, 7), 50),
-    ]);
-
-    var waves = [wave1, wave2 ,wave3];
-    LevelBase.call(this, "Sample Level", waves);
+function GetWaveSuffix(levelNumber, waveNumber) {
+    return levelNumber + 'ABCDEFGHIJ'[waveNumber];
 }
-SampleLevel.prototype = new LevelBase();
-SampleLevel.prototype.constructor = SampleLevel;
+
+
+function WaveAsteroid(level, levelNumber, waveNumber) {
+    var numberOfAsteroidSets = scaleValueForLevel(levelNumber, 15, 0.3, 50);
+    var asteroidGenerationSpeed = scaleValueForLevel(levelNumber, 100, -4, 20);
+    var chanceOfMultiples = scaleValueForLevel(levelNumber, 0.10, 0.08, 0.50);
+
+    var waveEvents = [];
+    for (var i = 0; i < numberOfAsteroidSets; i++) {
+        var asteroidSize = Math.random() * 12;
+        if (asteroidSize < 3.5) asteroidSize = 3.5;
+        var asteroidPosition = Math.random()*viewWidth;
+        var waveEvent = new WaveEventSpawnSprite(new Asteroid(asteroidPosition, asteroidSize), asteroidGenerationSpeed * i);
+        waveEvents.push(waveEvent);
+        if (Math.random() < chanceOfMultiples) i--;
+    }
+    
+    WaveBase.call(this, level, "Asteroid Belt " + GetWaveSuffix(levelNumber, waveNumber), waveEvents);
+}
+WaveAsteroid.prototype = new WaveBase();
+WaveAsteroid.prototype.constructor = WaveAsteroid;
+
+
+function WaveFleet(level, levelNumber, waveNumber) {
+    var waveEvents = [];
+
+    var numberOfInvaders = scaleValueForLevel(levelNumber, 6, 2, 30);
+    var invaderAttackRate = scaleValueForLevel(levelNumber, 1, 0.2, 4);
+    var invaderAttackDamage = scaleValueForLevel(levelNumber, 3, 0.2, 10);
+
+    var chanceOfSniper = scaleValueForLevel(levelNumber, 0, 0.06, 0.4);
+    var maxSnipers = scaleValueForLevel(levelNumber, 0, 0.4, 4);
+
+    var chanceOfStationaryRow = scaleValueForLevel(levelNumber, 0, 0.08, 0.5);
+    var numberOfStationaries = scaleValueForLevel(levelNumber, 0, 1, 9);
+    var missileDamage = scaleValueForLevel(levelNumber, 5, 0.2, 10);
+
+    var waveHasStationary = Math.random() < chanceOfStationaryRow;
+
+    // Invaders
+    for (var row = 0; row < 3; row++) {
+        var y = row * 75 + 80;
+        var delay = (2 - row) * 56;
+        for (var col = 0; col < 9; col++) {
+            var x = 100 + 75 * col;
+            var spotsRemaining = ((waveHasStationary ? 1 : 2) - row) * 9 + (9 - col);
+            if (Math.random() < numberOfInvaders / spotsRemaining) {
+                numberOfInvaders -= 1;
+                var invader = new SpriteInvader(x, y, invaderAttackRate, invaderAttackDamage);
+                waveEvents.push(new WaveEventSpawnSprite(invader, delay));
+            }
+        }
+        if (waveHasStationary) row++;
+    }
+
+    // Snipers
+    for (var row = 0; row < 4; row++) {
+        var y = row * 75 + 40;
+        if (maxSnipers > 0 && Math.random() < chanceOfSniper) {
+            var sniper = new SpriteInvaderSniper(y, player);
+            maxSnipers -= 1;
+            waveEvents.push(new WaveEventSpawnSprite(sniper, 0));
+        }
+    }
+
+    // Stationaries
+    if (waveHasStationary) {
+        for (var col = 0; col < 9; col++) {
+            var x = 100 + 75 * col;
+            var spotsRemaining = ((waveHasStationary ? 1 : 2) - row) * 9 + (9 - col);
+            if (Math.random() < numberOfStationaries / spotsRemaining) {
+                numberOfStationaries -= 1;
+                var stationary = new SpriteInvaderTurret(x, 155, missileDamage);
+                if (Math.random() < 0.5) stationary = new SpriteInvaderGarage(x, 155);
+                waveEvents.push(new WaveEventSpawnSprite(stationary, 0));
+            }
+        }
+    }
+
+    WaveBase.call(this, level, "Pixalien Fleet " + GetWaveSuffix(levelNumber, waveNumber), waveEvents);
+}
+WaveFleet.prototype = new WaveBase();
+WaveFleet.prototype.constructor = WaveFleet;
+
+
+function WaveTurrets(level, levelNumber, waveNumber) {
+    var waveEvents = [];
+
+    var numberOfInvaders = scaleValueForLevel(levelNumber, 4, 1, 30);
+    var missileDamage = scaleValueForLevel(levelNumber, 4, 0.2, 10);
+
+    // Invaders
+    for (var row = 0; row < 3; row++) {
+        var y = row * 75 + 80;
+        var delay = (2 - row) * 56;
+        for (var col = 0; col < 9; col++) {
+            var x = 100 + 75 * col;
+            var spotsRemaining = (2 - row) * 9 + (9 - col);
+            if (Math.random() < numberOfInvaders / spotsRemaining) {
+                numberOfInvaders -= 1;
+                var invader = new SpriteInvaderTurret(x, y, missileDamage);
+
+                if (Math.random() < 0.2 && row == 1) invader = new SpriteInvaderGarage(x, y);
+                if (Math.random() < 0.2 && row == 2) invader = new SpriteInvaderBulwark(x, y);
+
+                waveEvents.push(new WaveEventSpawnSprite(invader, delay));
+            }
+        }
+    }
+
+    WaveBase.call(this, level, "Turret Formation " + GetWaveSuffix(levelNumber, waveNumber), waveEvents);
+}
+WaveTurrets.prototype = new WaveBase();
+WaveTurrets.prototype.constructor = WaveTurrets;
+
+
+function scaleValueForLevel(levelNumber, initialValue, perLevel, limitValue) {
+    var ret = 2* levelNumber * perLevel + initialValue;
+    if (limitValue > initialValue && ret > limitValue) ret = limitValue;
+    if (limitValue < initialValue && ret < limitValue) ret = limitValue;
+    return ret;
+}
+
+
+
+function Level(levelNumber) {
+    var waves = [
+        new WaveFleet(this, levelNumber, 0),
+        new WaveAsteroid(this, levelNumber, 1),
+        new WaveTurrets(this, levelNumber, 2)
+    ];
+    LevelBase.call(this, "Level " + levelNumber, waves);
+}
+Level.prototype = new LevelBase();
+Level.prototype.constructor = Level;

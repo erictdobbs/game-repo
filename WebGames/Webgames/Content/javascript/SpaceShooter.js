@@ -95,37 +95,23 @@ function cycleMouseInfo() {
 
 
 var level;
+var levelNumber = 0;
 
 function initializeSprites() {
     player = new PlayerShip(400, 500, 4);
-    level = new SampleLevel();
+    level = new Level(levelNumber);
     sprites.push(player);
 
     var hpMeter = new MeterBase(400, 585, 500, 10, "green",
         function () { return player.HP },
         function () { return player.maxHP; })
-    var shieldMeter = new MeterBase(275, 575, 250, 5, "blue",
+    var shieldMeter = new MeterBase(400, 585, 500, 20, "cyan",
         function () { return player.shield.HP },
         function () { return player.shield.maxHP; })
     shieldMeter.minorTicks = 2;
 
     meters.push(shieldMeter);
     meters.push(hpMeter);
-
-    //setInterval(function () {
-    //    if (Math.random() < 0.20)
-    //        sprites.push(new Asteroid(200 + 400 * Math.random(), -100, 4 + 6 * Math.random()));
-    //}, 1000);
-
-    //setInterval(function () {
-    //    if (Math.random() < 0.20) {
-    //        var type = parseInt(Math.random() * 4);
-    //        if (type == 0) sprites.push(new PowerUpRepair(200 + 400 * Math.random(), -100, 4));
-    //        if (type == 1) sprites.push(new PowerUpWeapon(200 + 400 * Math.random(), -100, 4));
-    //        if (type == 2) sprites.push(new PowerUpShield(200 + 400 * Math.random(), -100, 4));
-    //        if (type == 3) sprites.push(new PowerUpSpeed(200 + 400 * Math.random(), -100, 4));
-    //    }
-    //}, 5000);
 }
 
 

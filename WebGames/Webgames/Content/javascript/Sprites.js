@@ -253,8 +253,8 @@ PlayerMissile.prototype.constructor = PlayerMissile;
 
 
 
-function SpriteInvader(x, y, scale, rotation) {
-    SpriteBase.call(this, x, y, scale, rotation);
+function SpriteInvader(x, y, attackRate, attackDamage) {
+    SpriteBase.call(this, x, y, 6, 0);
     this.targetY = y;
     this.y = -100;
     this.currentFrame = new Frame(graphicSheets.Invaders, 0);
@@ -264,6 +264,8 @@ function SpriteInvader(x, y, scale, rotation) {
         radius: 4
     };
     this.movementCounter = 0;
+    this.attackRate = attackRate;
+    this.attackDamage = attackDamage;
     this.attackTimer = 200 + Math.random() * 500;
     this.originalScale = this.scale;
     this.executeRules = function () {
@@ -271,14 +273,14 @@ function SpriteInvader(x, y, scale, rotation) {
         this.movementCounter++;
         this.x += 4 * Math.cos(this.movementCounter / 18);
 
-        this.attackTimer -= 1;
+        this.attackTimer -= this.attackRate;
         if (this.attackTimer < 25) {
             this.scale = this.originalScale * (1 + (25 - this.attackTimer) / 75);
         }
         if (this.attackTimer <= 0) {
             this.scale = this.originalScale;
             this.attackTimer = 200 + Math.random() * 500;
-            sprites.push(new SpriteEnemyBullet(this.x, this.y + 32, 4));
+            sprites.push(new SpriteEnemyBullet(this.x, this.y + 32, this.attackDamage));
         }
 
         this.handleCollisionDamage("PlayerAttack", "BlockedByShield");
@@ -325,7 +327,7 @@ function SpriteInvaderSniper(y, target) {
         this.handleCollisionDamage("PlayerAttack", "BlockedByShield");
     };
 
-    this.itemDropPool = [itemTypes.FuelCluster];
+    this.itemDropPool = [itemTypes.Pixelite, itemTypes.FuelCluster];
     this.onKill = function () {
         CreateParticleEffectExplosion(this.x, this.y);
     }
@@ -335,9 +337,9 @@ SpriteInvaderSniper.prototype.constructor = SpriteInvaderSniper;
 
 
 
-function SpriteInvaderTurret(x, y, target) {
+function SpriteInvaderTurret(x, y, damage) {
     SpriteBase.call(this, x, y, 0, 0);
-    this.target = target;
+    this.target = player;
     this.maxHP = 30;
     this.HP = 30;
     this.currentFrame = new Frame(graphicSheets.Invaders, 2);
@@ -349,6 +351,7 @@ function SpriteInvaderTurret(x, y, target) {
     this.originalScale = 6;
     this.rotationSpeed = Math.PI / 48;
     this.attackTimer = 200 + Math.random() * 300;
+    this.missileDamage = damage;
     this.executeRules = function () {
         var targetRotation = Math.atan2(-this.target.y + this.y, this.target.x - this.x) + Math.PI / 2;
         var rotationDiff = this.rotation - targetRotation;
@@ -372,7 +375,7 @@ function SpriteInvaderTurret(x, y, target) {
 
         if (this.attackTimer <= 0) {
             this.attackTimer = 200 + Math.random() * 500;
-            sprites.push(new SpriteMissile(this.x, this.y, 4, this.rotation));
+            sprites.push(new SpriteMissile(this.x, this.y, this.missileDamage, this.rotation));
         }
 
 
@@ -406,7 +409,7 @@ function SpriteInvaderBulwark(x, y) {
         this.handleCollisionDamage("PlayerAttack", "BlockedByShield");
     };
 
-    this.itemDropPool = [itemTypes.BulwarkPanel];
+    this.itemDropPool = [itemTypes.Pixelite, itemTypes.BulwarkPanel];
     this.onKill = function () {
         CreateParticleEffectExplosion(this.x, this.y);
     }
@@ -445,7 +448,7 @@ function SpriteInvaderGarage(x, y) {
         this.handleCollisionDamage("PlayerAttack", "BlockedByShield");
     };
 
-    this.itemDropPool = [itemTypes.ShieldModule];
+    this.itemDropPool = [itemTypes.Pixelite, itemTypes.ShieldModule];
     this.onKill = function () {
         CreateParticleEffectExplosion(this.x, this.y);
     }
@@ -498,8 +501,8 @@ SpriteEnemyHealthBubble.prototype.constructor = SpriteEnemyHealthBubble;
 
 
 
-function SpriteEnemyBullet(x, y, scale, rotation) {
-    SpriteBase.call(this, x, y, scale, rotation);
+function SpriteEnemyBullet(x, y, damage) {
+    SpriteBase.call(this, x, y, 4, 0);
     this.currentFrame = new Frame(graphicSheets.Projectiles, 0);
     this.spriteClasses = ["EnemyAttack", "HurtsPlayer", "BlockedByShield", "NoIndicator"];
     this.shadowBlur = 20;
@@ -508,7 +511,7 @@ function SpriteEnemyBullet(x, y, scale, rotation) {
         type: hitboxType.Circle,
         radius: 1
     };
-    this.damage = 3;
+    this.damage = damage;
     this.dy = 6;
     this.executeRules = function () {
         this.y += this.dy;
@@ -520,8 +523,8 @@ SpriteEnemyBullet.prototype.constructor = SpriteEnemyBullet;
 
 
 
-function SpriteMissile(x, y, scale, rotation) {
-    SpriteBase.call(this, x, y, scale, rotation);
+function SpriteMissile(x, y, damage, rotation) {
+    SpriteBase.call(this, x, y, 4, rotation);
     particleEffectGenerators.push(new ParticleEffectMissileSmokeGenerator(this, 0, 0));
     this.currentFrame = new Frame(graphicSheets.Projectiles, 3);
     this.spriteClasses = ["EnemyAttack", "HurtsPlayer", "BlockedByShield", "NoIndicator"];
@@ -534,7 +537,7 @@ function SpriteMissile(x, y, scale, rotation) {
         type: hitboxType.Circle,
         radius: 1
     };
-    this.damage = 5;
+    this.damage = damage;
     
     this.executeRules = function () {
         var targetThetaOffset = (Math.atan2(-(this.target.y - this.y), this.target.x - this.x) - this.rotation - Math.PI/2) % (Math.PI * 2);
@@ -576,31 +579,34 @@ SpriteLaser.prototype.constructor = SpriteLaser;
 
 
 
-function Asteroid(x, y, scale, rotation) {
-    SpriteBase.call(this, x, y, scale, rotation);
+function Asteroid(x, scale) {
+    SpriteBase.call(this, x, -100, scale, 0);
+    if (this.scale < 3.5) this.scale = 3.5;
     this.currentFrame = new Frame(graphicSheets.Asteroid, 0);
     this.damage = parseInt(scale / 2);
     this.HP = scale;
     this.maxHP = scale;
     this.spriteClasses = ["Enemy", "HurtsPlayer", "BlockedByShield"];
+    this.rotationSpeed = Math.PI / 48;
     this.hitbox = {
         type: hitboxType.Circle,
         radius: 4
     };
-    this.dx = Math.random() * 4 - 2;
+    //this.dx = Math.random() * 4 - 2;
     this.dy = 12 - this.scale;
-    if (this.dy <= 0) this.dy = 1;
+    if (this.dy <= 2) this.dy = 2;
 
     this.onTakeDamage = function (damage) {
-        this.dx /= 1.5;
-        this.dy /= 1.5;
+        this.scale *= 0.9;
+        if (this.scale < 3.5) this.scale = 3.5;
+        this.rotationSpeed *= 1.1;
     }
 
     this.executeRules = function () {
         this.x += this.dx;
         this.y += this.dy;
-        this.rotation -= Math.PI / 48;
-        if (this.y > viewHeight + 64) this.kill();
+        this.rotation -= this.rotationSpeed;
+        if (this.y > viewHeight + 256) this.kill();
 
         this.handleCollisionDamage("PlayerAttack", "BlockedByShield");
     };
