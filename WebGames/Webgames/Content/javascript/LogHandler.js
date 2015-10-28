@@ -5,7 +5,7 @@
     verbose: 3
 }
 
-var loggingLevel = loggingSeverity.information;
+var loggingLevel = loggingSeverity.none;
 
 function logMessage(severity, message) {
     if (severity <= loggingLevel) {

@@ -1,6 +1,6 @@
 ﻿var viewWidth = 800;
 var viewHeight = 600;
-window.onload = startGame;
+window.onload = InitializeGameEngine;
 
 var gameViewContext;
 var sprites = [];
@@ -12,10 +12,10 @@ var mainLoop = { interval: null, milliseconds: 19 };
 
 var player;
 
-function startGame() {
+function InitializeGameEngine() {
     initializeGraphicSheets();
+    initializeCustomization();
     initializeItemTypes();
-    initializeSprites();
     var gameView = document.getElementById('gameView');
 
     gameView.addEventListener("mousedown", onMouseClick, false);
@@ -71,11 +71,15 @@ function startGame() {
     gameViewContext.imageSmoothingEnabled = false;
 
     mainLoop.interval = setInterval(pulse, mainLoop.milliseconds);
+    MainMenu();
 }
+
+
+
 
 var frameTimes = [];
 function pulse() {
-    testDraw();
+    MainDrawLoop();
     cycleMouseInfo();
 
     frameTimes.push(new Date());
@@ -97,7 +101,11 @@ function cycleMouseInfo() {
 var level;
 var levelNumber = 0;
 
-function initializeSprites() {
+
+
+function StartGame() {
+    ClearGame();
+    levelNumber = 0
     player = new PlayerShip(400, 500, 4);
     level = new Level(levelNumber);
     sprites.push(player);
@@ -114,9 +122,21 @@ function initializeSprites() {
     meters.push(hpMeter);
 }
 
+function ClearGame() {
+    customizingShip = false;
+    isShopping = false;
+    level = null;
+    player = null;
+    sprites = [];
+    particleEffects = [];
+    particleEffectGenerators = [];
+    numberIndicators = [];
+    meters = [];
+    buttons = [];
+}
 
 
-function testDraw() {
+function MainDrawLoop() {
     gameViewContext.clearRect(0, 0, viewWidth, viewHeight);
     gameViewContext.fillStyle = "white";
     gameViewContext.fillRect(Math.random() * viewWidth, Math.random() * viewHeight, 5, 5);
@@ -145,7 +165,7 @@ function testDraw() {
         meters[i].draw();
     for (var i = 0; i < buttons.length; i++)
         buttons[i].draw();
-    DrawInventory(player);
+    if (player) DrawInventory(player);
 }
 
 Array.prototype.rand = function () {

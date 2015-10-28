@@ -128,7 +128,10 @@ function PlayerShip(x, y, scale, rotation) {
     particleEffectGenerators.push(new ParticleEffectSmokeGenerator(this, 0, 1));
     this.dx = 0;
     this.dy = 0;
-    this.currentFrame = new Frame(graphicSheets.PlayerShip, 0);
+    var frame = new Frame(null, 0);
+    frame.imageSource = document.getElementById('shipCanvas');
+    frame.graphicSheet = { cellWidth: 17, cellHeight: 17, columns: 1 };
+    this.currentFrame = frame;
     this.spriteClasses = ["Player"];
     this.weaponCooldownCounter = 0;
     this.weaponCooldown = 30;
@@ -145,7 +148,7 @@ function PlayerShip(x, y, scale, rotation) {
     this.bulletDamage = 3;
     this.bulletSpeed = 6;
     this.executeRules = function () {
-        if (isShopping) return;
+        if (isShopping || customizingShip) return;
 
         if (this.weaponCooldownCounter > 0) this.weaponCooldownCounter -= this.weaponRechargeSpeed;
 

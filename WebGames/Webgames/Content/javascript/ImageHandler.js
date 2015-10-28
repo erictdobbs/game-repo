@@ -22,6 +22,13 @@ function initializeGraphicSheets() {
     }
 }
 
+function initializeCustomization() {
+    var shipCanvas = document.getElementById('shipCanvas');
+    var shipCtx = shipCanvas.getContext('2d');
+    var targetImage = document.getElementById('PlayerShip');
+    shipCtx.drawImage(targetImage, 0, 0);
+}
+
 
 //
 // Frames
@@ -29,7 +36,7 @@ function initializeGraphicSheets() {
 //
 function Frame(graphicSheet, cellIndex) {
     this.graphicSheet = graphicSheet;
-    this.imageSource = graphicSheet.image;
+    if (graphicSheet) this.imageSource = graphicSheet.image;
     this.cellIndex = cellIndex;
 }
 Frame.prototype.draw = function (x, y, scale, rotation) {
