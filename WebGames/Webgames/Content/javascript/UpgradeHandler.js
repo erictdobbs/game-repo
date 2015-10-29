@@ -4,7 +4,9 @@ var shoppingStates = {
     uninitialized: 0,
     starting: 1,
     shopping: 2,
-    closing: 3
+    closing: 3,
+    scoreDisplay: 4,
+    endingScoreDisplay: 5
 };
 
 var currentShoppingState = shoppingStates.uninitialized;
@@ -69,7 +71,29 @@ function handleShopping() {
         player.y = shoppingCosMap(targetPlayerY, playerShoppingOriginalY, migrationRatio);
         player.scale = shoppingCosMap(targetScale, playerShoppingOriginalScale, migrationRatio);
         panelY = shoppingCosMap(targetPanelY, originalPanelY, migrationRatio);
+
+        DrawScores([levelScores], levelScores.length - 1, 0, shoppingCosMap(viewHeight, 0, migrationRatio));
         if (shoppingTimer == 100) {
+            shoppingTimer = 0;
+            currentShoppingState = shoppingStates.scoreDisplay;
+        }
+    }
+
+    if (currentShoppingState == shoppingStates.scoreDisplay) {
+        shoppingTimer += 1;
+        DrawScores([levelScores], levelScores.length - 1, 0, 0);
+        if (keyboardState.isKeyPressed(keyboardState.key.Space)) {
+            shoppingTimer = 0;
+            currentShoppingState = shoppingStates.endingScoreDisplay;
+        }
+    }
+
+    if (currentShoppingState == shoppingStates.endingScoreDisplay) {
+        shoppingTimer += 1;
+        var migrationRatio = shoppingTimer / 100;
+        DrawScores([levelScores], levelScores.length - 1, 0, shoppingCosMap(0, -viewHeight, migrationRatio));
+        if (shoppingTimer == 100) {
+            shoppingTimer = 0;
             finishShopping();
         }
     }
@@ -219,7 +243,7 @@ function drawUpgradePanel(y, upgradeTypes) {
             gameViewContext.fillStyle = "rgba(0,0,0,0.3)";
             gameViewContext.fillRect(buttonX, buttonY, this.width, this.height);
             gameViewContext.fillStyle = "white";
-            gameViewContext.font = "20px Arial";
+            gameViewContext.font = "20px monospace";
             gameViewContext.fillText(confirmText, viewWidth / 2 + margin + margin / 2, buttonY + margin + 8);
             gameViewContext.fillText(confirmText2, buttonX + margin / 2, buttonY + margin * 2.5 + 8);
         };
@@ -235,7 +259,7 @@ function drawUpgradePanel(y, upgradeTypes) {
         cancelButton.y = viewHeight / 1.5;
         cancelButton.width = purchaseButton.width;
         cancelButton.text = "DONE";
-        cancelButton.font = "40px Arial";
+        cancelButton.font = "40px monospace";
         cancelButton.getOffset = function () { return upgradePanelOffset; };
         cancelButton.onClick = function () { this.sparkle(); currentShoppingState = shoppingStates.closing; };
         buttons.push(cancelButton);

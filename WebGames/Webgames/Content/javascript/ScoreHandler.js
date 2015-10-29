@@ -1,0 +1,83 @@
+﻿
+var levelScores = [];
+
+function CreateScoreForLevel() {
+    levelScores.push(new LevelScore());
+}
+
+function LevelScore() { }
+
+function AddToScore(key, value) {
+    var score = levelScores[levelScores.length - 1];
+
+    if (!score[key]) {
+        score[key] = value;
+        return;
+    } else {
+        score[key] += value;
+    }
+}
+
+function SumScores(list, upToLevel) {
+    if (!list) return;
+    var lastIndex = list.length - 1;
+    if (upToLevel) lastIndex = upToLevel - 1;
+
+    var ret = {};
+    for (var i = 0; i <= lastIndex; i++) {
+        var score = list[i];
+        for (propName in score) {
+            if (!ret[propName]) ret[propName] = score[propName];
+            else ret[propName] += score[propName];
+        }
+    }
+    return ret;
+}
+
+function DrawScores(scoreLists, upToLevel, x, y, titleText) {
+    y += 50;
+    var columns = scoreLists.length + 1;
+
+    var margin = 30;
+    var columnWidth = (viewWidth - margin) / columns;
+    var rowHeight = 36;
+
+    var scoreFont = "24px monospace";
+    var scoreColor = "white";
+    var scoreSubFont = "16px monospace";
+    var scoreSubColor = "gray";
+    if (titleText == undefined) titleText = "SCORES";
+
+    gameViewContext.font = "48px monospace";
+    gameViewContext.fillStyle = "white";
+    gameViewContext.shadowBlur = 0;
+    gameViewContext.fillText(titleText, x + margin, y + margin / 2);
+    gameViewContext.font = scoreFont;
+    gameViewContext.fillStyle = scoreColor;
+
+    var playerTotals = SumScores(scoreLists[0], upToLevel);
+
+    var drawY = y + margin;
+    for (scoreType in playerTotals) {
+        drawY += rowHeight;
+        gameViewContext.font = scoreFont;
+        gameViewContext.fillStyle = scoreColor;
+        gameViewContext.fillText(scoreType, x + margin, drawY);
+        gameViewContext.font = scoreSubFont;
+        gameViewContext.fillStyle = scoreSubColor;
+        gameViewContext.fillText("Up to level " + upToLevel, x + margin * 2, drawY + rowHeight);
+        for (var i = 0; i < scoreLists.length; i++) {
+            var drawX = x + margin + columnWidth * (i + 1);
+            gameViewContext.font = scoreFont;
+            gameViewContext.fillStyle = scoreColor;
+            gameViewContext.fillText(scoreLists[i][upToLevel][scoreType], drawX, drawY);
+            gameViewContext.font = scoreSubFont;
+            gameViewContext.fillStyle = scoreSubColor;
+            gameViewContext.fillText(SumScores(scoreLists[i], upToLevel)[scoreType], drawX, drawY + rowHeight);
+        }
+        drawY += rowHeight;
+    }
+    gameViewContext.font = scoreFont;
+    gameViewContext.fillStyle = scoreColor;
+    gameViewContext.fillText("Space to continue", x + margin, drawY);
+}

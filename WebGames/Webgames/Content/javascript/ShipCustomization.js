@@ -40,13 +40,20 @@ function ShipCustomization() {
         }
     }
 
-    var doneButton = new Button(500, 520, 270, 50, "DONE");
+    var doneButton = new Button(500, 520, 125, 50, "DONE");
     doneButton.onClick = function () {
         customizingShip = false;
         SaveCustomizationToImage();
-        MainMenu();
+        sprites.push(new FadeOut(MainMenu));
     }
     buttons.push(doneButton);
+
+    var cancelButton = new Button(645, 520, 125, 50, "CANCEL");
+    cancelButton.onClick = function () {
+        customizingShip = false;
+        sprites.push(new FadeOut(MainMenu));
+    }
+    buttons.push(cancelButton);
 }
 
 function RandomShipColor() {

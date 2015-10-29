@@ -57,6 +57,7 @@ function SpawnLoot(enemy) {
 var drawInventoryTimer = -1;
 
 function AddCommodityToInventory(player, commodityType, amount) {
+    AddToScore("Items Collected", 1);
     if (drawInventoryTimer == -1) drawInventoryTimer = 0;
     else drawInventoryTimer = 15;
     var commodities = player.inventory.commodities;
@@ -107,7 +108,7 @@ function DrawInventory(player) {
         var itemType = itemTypes[itemTypeName.replace("ItemDrop", "")];
         itemType.frame.draw(x, y, 1, 0);
 
-        gameViewContext.font = "16px Arial";
+        gameViewContext.font = "16px monospace";
         gameViewContext.fillStyle = "white";
         var text = player.inventory.commodities[itemTypeName].toString();
         gameViewContext.fillText(text, x + 20, y + 4);

@@ -16,7 +16,7 @@ function Button(x, y, width, height, text) {
         this.height = height;
         this.text = text;
     }
-    this.font = "20px Arial";
+    this.font = "20px monospace";
     this.draw = function () {
         var y = this.y;
         if (this.getOffset) y += this.getOffset();

@@ -3,6 +3,7 @@
     this.waves = waves;
     this.waveIndex = 0;
     this.active = true;
+    if (waves) CreateScoreForLevel();
 
     this.update = function () {
         if (!this.active) return;
@@ -54,7 +55,7 @@ function WaveBase(level, name, waveEvents) {
         gameViewContext.shadowBlur = 0;
         gameViewContext.fillStyle = "red";
         gameViewContext.fillRect(x, y, width, 3);
-        gameViewContext.font = "italic 48px Arial";
+        gameViewContext.font = "italic 48px monospace";
         gameViewContext.fillStyle = "red";
         gameViewContext.shadowBlur = 0;
         gameViewContext.fillText(this.name, x, y - 30);
@@ -72,7 +73,7 @@ function WaveBase(level, name, waveEvents) {
         gameViewContext.shadowBlur = 0;
         gameViewContext.fillStyle = "red";
         gameViewContext.fillRect(x, y, width, 3);
-        gameViewContext.font = "italic 48px Arial";
+        gameViewContext.font = "italic 48px monospace";
         gameViewContext.fillStyle = "red";
         gameViewContext.shadowBlur = 0;
         var text = "Wave Complete!";

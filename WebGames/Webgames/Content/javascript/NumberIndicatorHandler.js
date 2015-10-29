@@ -1,7 +1,7 @@
 ﻿var numberIndicators = [];
 
 function NumberIndicator(parent, value) {
-    this.font = "20px Arial";
+    this.font = "20px monospace";
     if (parent) {
         this.textWidth = gameViewContext.measureText(value).width;
         this.x = parent.x - this.textWidth/2;
@@ -13,7 +13,7 @@ function NumberIndicator(parent, value) {
     this.draw = function () {
         gameViewContext.shadowBlur = 0;
         gameViewContext.fillStyle = this.color.toString();
-        gameViewContext.font = "20px Arial";
+        gameViewContext.font = "20px monospace";
         gameViewContext.fillText(this.value, this.x, this.y);
     }
     this.delete = function () {

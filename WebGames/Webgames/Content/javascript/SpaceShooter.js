@@ -85,7 +85,7 @@ function pulse() {
     frameTimes.push(new Date());
     if (frameTimes.length > 50) frameTimes.splice(0, 1);
     var fpsText = "FPS: " + parseInt(1000 * frameTimes.length / (frameTimes[frameTimes.length - 1] - frameTimes[0]));
-    gameViewContext.font = "16px Arial";
+    gameViewContext.font = "16px monospace";
     gameViewContext.fillStyle = "white";
     gameViewContext.shadowBlur = 0;
     gameViewContext.fillText(fpsText, 10, 20);

@@ -59,6 +59,8 @@ function SpriteBase(x, y, scale, rotation) {
 
     this.handleCollisionDamage = function (category, shieldBlockedCategory) {
         var struckDamagers = getOverlappingSprites(this, category);
+        if (struckDamagers.length > 0 && category == "PlayerAttack") AddToScore("Hits Landed", 1);
+        if (struckDamagers.length > 0 && category == "HurtsPlayer") AddToScore("Hits Taken", 1);
         for (var i = 0; i < struckDamagers.length; i++) {
             if (shieldBlockedCategory != undefined &&
                 struckDamagers[i].spriteClasses.indexOf(shieldBlockedCategory) > -1 &&
@@ -164,6 +166,7 @@ function PlayerShip(x, y, scale, rotation) {
         if (keyboardState.isKeyPressed(keyboardState.key.Space) && this.weaponCooldownCounter <= 0) {
             this.weaponCooldownCounter = this.weaponCooldown;
             sprites.push(new PlayerMissile(this.x, this.y - 32, this.bulletSpeed, this.bulletDamage));
+            AddToScore("Shots Fired", 1);
         }
 
         if (this.shield.HP > 0) this.shield.applyHealth(this.shieldRechargeRate, true);
@@ -172,6 +175,9 @@ function PlayerShip(x, y, scale, rotation) {
     };
     this.onKill = function () {
         CreateParticleEffectExplosion(this.x, this.y);
+        for (var i=0; i<20; i++)
+            CreateParticleEffectExplosion(this.x + 80 * (Math.random() - 0.5), this.y + 80 * (Math.random() - 0.5));
+        setTimeout(function () { sprites.push(new FadeOut(ClearGame, GameOver)); }, 3000);
     }
 }
 PlayerShip.prototype = new SpriteBase();

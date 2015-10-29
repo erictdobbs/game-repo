@@ -22,6 +22,48 @@ StudioLogo.prototype = new SpriteBase();
 StudioLogo.prototype.constructor = StudioLogo;
 
 
+function FadeOut(fadeOutCallback, fadeInCallBack) {
+    SpriteBase.call(this, 0, 0, 0, 0);
+    this.fadeOutCallback = fadeOutCallback;
+    this.fadeInCallBack = fadeInCallBack;
+    this.color = new Color(30, 30, 80, 0);
+    this.executeRules = function () {
+        this.color.a += 0.05;
+        if (this.color.a >= 1) {
+            this.delete();
+            if (this.fadeOutCallback) this.fadeOutCallback();
+            sprites.push(new FadeIn(this.fadeInCallBack));
+        }
+    }
+    this.draw = function () {
+        gameViewContext.fillStyle = this.color.toString();
+        gameViewContext.fillRect(0, 0, viewWidth, viewHeight);
+    }
+}
+FadeOut.prototype = new SpriteBase();
+FadeOut.prototype.constructor = FadeOut;
+
+
+function FadeIn(callback) {
+    SpriteBase.call(this, 0, 0, 0, 0);
+    this.callback = callback;
+    this.color = new Color(30, 30, 80, 1.0);
+    this.executeRules = function () {
+        this.color.a -= 0.05;
+        if (this.color.a <= 0) {
+            this.delete();
+            if (this.callback) this.callback();
+        }
+    }
+    this.draw = function () {
+        gameViewContext.fillStyle = this.color.toString();
+        gameViewContext.fillRect(0, 0, viewWidth, viewHeight);
+    }
+}
+FadeIn.prototype = new SpriteBase();
+FadeIn.prototype.constructor = FadeIn;
+
+
 
 function GameStarter() {
     this.initialized = false;
@@ -42,7 +84,10 @@ function GameStarter() {
             sprites[i].dy += 0.2;
             sprites[i].y += sprites[i].dy;
         }
-        if (this.counter >= 100) StartGame();
+        if (this.counter >= 100) {
+            StartGame();
+            sprites.push(new FadeIn());
+        }
     };
 }
 GameStarter.prototype = new SpriteBase();
@@ -69,19 +114,21 @@ function MainMenu() {
         this.clicked = true;
         this.sparkle();
         var instructions = new Button(520, 230, 200, 40, "WASD to move.");
-        instructions.font = "16px Arial";
+        instructions.font = "16px monospace";
         buttons.push(instructions);
         var instructions2 = new Button(520, 270, 200, 50, "Space to shoot.");
-        instructions2.font = "16px Arial";
+        instructions2.font = "16px monospace";
         buttons.push(instructions2);
         var instructions3 = new Button(520, 320, 200, 50, "That's it.");
-        instructions3.font = "16px Arial";
+        instructions3.font = "16px monospace";
         buttons.push(instructions3);
     };
     buttons.push(instructionsButton);
 
     var customizeButton = new Button(300, 390, 200, 60, "CUSTOMIZE SHIP");
-    customizeButton.onClick = ShipCustomization;
+    customizeButton.onClick = function () {
+        sprites.push(new FadeOut(ShipCustomization));
+    }
     buttons.push(customizeButton);
 }
 
