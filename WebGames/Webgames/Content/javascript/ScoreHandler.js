@@ -38,6 +38,11 @@ function DrawScores(scoreLists, upToLevel, x, y, titleText) {
     y += 50;
     var columns = scoreLists.length + 1;
 
+
+    var playerFrame = new Frame(null, 0);
+    playerFrame.imageSource = document.getElementById('shipCanvas');
+    playerFrame.graphicSheet = { cellWidth: 17, cellHeight: 17, columns: 1 };
+
     var margin = 30;
     var columnWidth = (viewWidth - margin) / columns;
     var rowHeight = 36;
@@ -47,6 +52,10 @@ function DrawScores(scoreLists, upToLevel, x, y, titleText) {
     var scoreSubFont = "16px monospace";
     var scoreSubColor = "gray";
     if (titleText == undefined) titleText = "SCORES";
+    if (titleText == "GAME OVER") {
+        scoreSubFont = scoreFont;
+        scoreSubColor = scoreColor;
+    }
 
     gameViewContext.font = "48px monospace";
     gameViewContext.fillStyle = "white";
@@ -57,6 +66,8 @@ function DrawScores(scoreLists, upToLevel, x, y, titleText) {
 
     var playerTotals = SumScores(scoreLists[0], upToLevel);
 
+    playerFrame.draw(x + margin + columnWidth + 34, y, 4, 0);
+
     var drawY = y + margin;
     for (scoreType in playerTotals) {
         drawY += rowHeight;
@@ -65,14 +76,14 @@ function DrawScores(scoreLists, upToLevel, x, y, titleText) {
         gameViewContext.fillText(scoreType, x + margin, drawY);
         gameViewContext.font = scoreSubFont;
         gameViewContext.fillStyle = scoreSubColor;
-        gameViewContext.fillText("Up to level " + upToLevel, x + margin * 2, drawY + rowHeight);
+        if (titleText != "GAME OVER") gameViewContext.fillText("Up to level " + upToLevel, x + margin * 2, drawY + rowHeight);
         for (var i = 0; i < scoreLists.length; i++) {
             var drawX = x + margin + columnWidth * (i + 1);
             gameViewContext.font = scoreFont;
             gameViewContext.fillStyle = scoreColor;
             var scoreText = scoreLists[i][upToLevel][scoreType];
             if (scoreText == undefined) scoreText = "0";
-            gameViewContext.fillText(scoreText, drawX, drawY);
+            if (titleText != "GAME OVER") gameViewContext.fillText(scoreText, drawX, drawY);
             gameViewContext.font = scoreSubFont;
             gameViewContext.fillStyle = scoreSubColor;
             var scoreSubText = SumScores(scoreLists[i], upToLevel)[scoreType];
