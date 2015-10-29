@@ -70,14 +70,18 @@ function DrawScores(scoreLists, upToLevel, x, y, titleText) {
             var drawX = x + margin + columnWidth * (i + 1);
             gameViewContext.font = scoreFont;
             gameViewContext.fillStyle = scoreColor;
-            gameViewContext.fillText(scoreLists[i][upToLevel][scoreType], drawX, drawY);
+            var scoreText = scoreLists[i][upToLevel][scoreType];
+            if (scoreText == undefined) scoreText = "0";
+            gameViewContext.fillText(scoreText, drawX, drawY);
             gameViewContext.font = scoreSubFont;
             gameViewContext.fillStyle = scoreSubColor;
-            gameViewContext.fillText(SumScores(scoreLists[i], upToLevel)[scoreType], drawX, drawY + rowHeight);
+            var scoreSubText = SumScores(scoreLists[i], upToLevel)[scoreType];
+            if (scoreSubText == undefined) scoreSubText = "0";
+            gameViewContext.fillText(scoreSubText, drawX, drawY + rowHeight);
         }
         drawY += rowHeight;
     }
     gameViewContext.font = scoreFont;
     gameViewContext.fillStyle = scoreColor;
-    gameViewContext.fillText("Space to continue", x + margin, drawY);
+    gameViewContext.fillText("Space to continue", x + margin, drawY + rowHeight*2);
 }
