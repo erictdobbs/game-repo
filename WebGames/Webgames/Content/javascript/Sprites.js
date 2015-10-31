@@ -176,7 +176,7 @@ function PlayerShip(x, y, scale, rotation) {
     this.onKill = function () {
         CreateParticleEffectExplosion(this.x, this.y);
         for (var i=0; i<20; i++)
-            CreateParticleEffectExplosion(this.x + 80 * (Math.random() - 0.5), this.y + 80 * (Math.random() - 0.5));
+            CreateParticleEffectExplosion(this.x + 120 * (Math.random() - 0.5), this.y + 120 * (Math.random() - 0.5));
         setTimeout(function () { sprites.push(new FadeOut(ClearGame, GameOver)); }, 3000);
     }
 }

@@ -27,6 +27,11 @@ function initializeCustomization() {
     var shipCtx = shipCanvas.getContext('2d');
     var targetImage = document.getElementById('PlayerShip');
     shipCtx.drawImage(targetImage, 0, 0);
+
+    var opponentShipCanvas = document.getElementById('opponentShipCanvas');
+    var opponentShipCtx = opponentShipCanvas.getContext('2d');
+    var targetImage = document.getElementById('PlayerShip');
+    opponentShipCtx.drawImage(targetImage, 0, 0);
 }
 
 

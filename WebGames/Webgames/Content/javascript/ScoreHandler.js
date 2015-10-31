@@ -1,5 +1,6 @@
 ﻿
 var levelScores = [];
+var opponentScores = [];
 
 function CreateScoreForLevel() {
     levelScores.push(new LevelScore());
@@ -21,7 +22,7 @@ function AddToScore(key, value) {
 function SumScores(list, upToLevel) {
     if (!list) return;
     var lastIndex = list.length - 1;
-    if (upToLevel) lastIndex = upToLevel - 1;
+    if (upToLevel !== undefined) lastIndex = upToLevel;
 
     var ret = {};
     for (var i = 0; i <= lastIndex; i++) {
@@ -34,7 +35,10 @@ function SumScores(list, upToLevel) {
     return ret;
 }
 
-function DrawScores(scoreLists, upToLevel, x, y, titleText) {
+function DrawScores(x, y, titleText) {
+    var scoreLists = [levelScores];
+    var upToLevel = levelScores.length - 1;
+    if (opponentScores.length) scoreLists.push(opponentScores);
     y += 50;
     var columns = scoreLists.length + 1;
 
@@ -42,6 +46,10 @@ function DrawScores(scoreLists, upToLevel, x, y, titleText) {
     var playerFrame = new Frame(null, 0);
     playerFrame.imageSource = document.getElementById('shipCanvas');
     playerFrame.graphicSheet = { cellWidth: 17, cellHeight: 17, columns: 1 };
+
+    var opponentFrame = new Frame(null, 0);
+    opponentFrame.imageSource = document.getElementById('opponentShipCanvas');
+    opponentFrame.graphicSheet = { cellWidth: 17, cellHeight: 17, columns: 1 };
 
     var margin = 30;
     var columnWidth = (viewWidth - margin) / columns;
@@ -67,6 +75,7 @@ function DrawScores(scoreLists, upToLevel, x, y, titleText) {
     var playerTotals = SumScores(scoreLists[0], upToLevel);
 
     playerFrame.draw(x + margin + columnWidth + 34, y, 4, 0);
+    if (opponentScores.length) opponentFrame.draw(x + margin + 2*columnWidth + 34, y, 4, 0);
 
     var drawY = y + margin;
     for (scoreType in playerTotals) {
@@ -81,7 +90,9 @@ function DrawScores(scoreLists, upToLevel, x, y, titleText) {
             var drawX = x + margin + columnWidth * (i + 1);
             gameViewContext.font = scoreFont;
             gameViewContext.fillStyle = scoreColor;
-            var scoreText = scoreLists[i][upToLevel][scoreType];
+
+            var scoreText = "MIA";
+            if (scoreLists[i][upToLevel] !== undefined) scoreText = scoreLists[i][upToLevel][scoreType];
             if (scoreText == undefined) scoreText = "0";
             if (titleText != "GAME OVER") gameViewContext.fillText(scoreText, drawX, drawY);
             gameViewContext.font = scoreSubFont;
@@ -94,5 +105,5 @@ function DrawScores(scoreLists, upToLevel, x, y, titleText) {
     }
     gameViewContext.font = scoreFont;
     gameViewContext.fillStyle = scoreColor;
-    gameViewContext.fillText("Space to continue", x + margin, drawY + rowHeight*2);
+    if (titleText != "GAME OVER") gameViewContext.fillText("Space to continue", x + margin, drawY + rowHeight * 2);
 }

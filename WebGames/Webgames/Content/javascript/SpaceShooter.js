@@ -15,6 +15,7 @@ var player;
 function InitializeGameEngine() {
     initializeGraphicSheets();
     initializeCustomization();
+    CheckForAndHandleUrlParameters();
     initializeItemTypes();
     var gameView = document.getElementById('gameView');
 

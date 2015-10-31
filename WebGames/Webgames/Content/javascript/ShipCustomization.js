@@ -43,7 +43,7 @@ function ShipCustomization() {
     var doneButton = new Button(500, 520, 125, 50, "DONE");
     doneButton.onClick = function () {
         customizingShip = false;
-        SaveCustomizationToImage();
+        SaveCustomizationToImage('shipCanvas', paintButtons.map(function (x) { return x.color;}));
         sprites.push(new FadeOut(MainMenu));
     }
     buttons.push(doneButton);
@@ -70,30 +70,27 @@ function GetSelectedColor() {
 }
 
 
-function SaveCustomizationToImage() {
+function SaveCustomizationToImage(targetCanvasId, colors) {
     var targetImage = document.getElementById('PlayerShip');
-    var shipCanvas = document.getElementById('shipCanvas');
+    var shipCanvas = document.getElementById(targetCanvasId);
     var customizationCanvas = document.getElementById('customizationCanvas');
 
     shipColors = [];
     var ctx = customizationCanvas.getContext('2d');
     var imageData = ctx.getImageData(0, 0, customizationCanvas.width, customizationCanvas.height);
-    for (var x = 0; x < 5; x++) {
-        for (var y = 0; y < 5; y++) {
-            var buttonIndex = y * 5 + x;
-            var button = paintButtons[buttonIndex];
-            shipColors.push(button.color);
+    for (var i = 0; i < colors.length; i++) {
+        var color = colors[i];
+        if (targetCanvasId == "shipCanvas") shipColors.push(color);
 
-            var redIndex = (x + y * 5) * 4;
-            var greenIndex = redIndex + 1;
-            var blueIndex = redIndex + 2;
-            var alphaIndex = redIndex + 3;
+        var redIndex = i * 4;
+        var greenIndex = redIndex + 1;
+        var blueIndex = redIndex + 2;
+        var alphaIndex = redIndex + 3;
 
-            imageData.data[redIndex] = button.color.r;
-            imageData.data[greenIndex] = button.color.g;
-            imageData.data[blueIndex] = button.color.b;
-            imageData.data[alphaIndex] = 255;
-        }
+        imageData.data[redIndex] = color.r;
+        imageData.data[greenIndex] = color.g;
+        imageData.data[blueIndex] = color.b;
+        imageData.data[alphaIndex] = 255;
     }
     ctx.putImageData(imageData, 0, 0);
 

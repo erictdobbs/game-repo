@@ -53,7 +53,7 @@ function handleShopping() {
         player.y = shoppingCosMap(playerShoppingOriginalY, targetPlayerY, migrationRatio);
         player.scale = shoppingCosMap(playerShoppingOriginalScale, targetScale, migrationRatio);
         panelY = shoppingCosMap(originalPanelY, targetPanelY, migrationRatio);
-        if (shoppingTimer == 100) {
+        if (shoppingTimer >= 100) {
             shoppingTimer = 0;
             currentShoppingState = shoppingStates.shopping
         }
@@ -72,8 +72,8 @@ function handleShopping() {
         player.scale = shoppingCosMap(targetScale, playerShoppingOriginalScale, migrationRatio);
         panelY = shoppingCosMap(targetPanelY, originalPanelY, migrationRatio);
 
-        DrawScores([levelScores], levelScores.length - 1, 0, shoppingCosMap(viewHeight, 0, migrationRatio));
-        if (shoppingTimer == 100) {
+        DrawScores(0, shoppingCosMap(viewHeight, 0, migrationRatio));
+        if (shoppingTimer >= 100) {
             shoppingTimer = 0;
             currentShoppingState = shoppingStates.scoreDisplay;
         }
@@ -81,7 +81,7 @@ function handleShopping() {
 
     if (currentShoppingState == shoppingStates.scoreDisplay) {
         shoppingTimer += 1;
-        DrawScores([levelScores], levelScores.length - 1, 0, 0);
+        DrawScores(0, 0);
         if (keyboardState.isKeyPressed(keyboardState.key.Space)) {
             shoppingTimer = 0;
             currentShoppingState = shoppingStates.endingScoreDisplay;
@@ -91,8 +91,8 @@ function handleShopping() {
     if (currentShoppingState == shoppingStates.endingScoreDisplay) {
         shoppingTimer += 1;
         var migrationRatio = shoppingTimer / 100;
-        DrawScores([levelScores], levelScores.length - 1, 0, shoppingCosMap(0, -viewHeight, migrationRatio));
-        if (shoppingTimer == 100) {
+        DrawScores(0, shoppingCosMap(0, -viewHeight, migrationRatio));
+        if (shoppingTimer >= 100) {
             shoppingTimer = 0;
             finishShopping();
         }
