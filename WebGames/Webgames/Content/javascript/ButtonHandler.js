@@ -48,19 +48,12 @@ function Button(x, y, width, height, text) {
     }
 }
 
-function onMouseClick(e) {
-    if (player != null && currentShoppingState != shoppingStates.shopping) return;
-    var x = event.x;
-    var y = event.y;
-    var canvas = document.getElementById("gameView");
-    x -= canvas.offsetLeft;
-    y -= canvas.offsetTop;
-
+function HandleButtonClickAtPosition(x, y) {
     for (var i = 0; i < buttons.length; i++) {
         var button = buttons[i];
         if (button.x <= x && button.width + button.x > x &&
             button.y <= y && button.height + button.y > y) {
-            if(button.onClick) button.onClick();
+            if (button.onClick) button.onClick();
         }
     }
 }

@@ -160,13 +160,23 @@ function PlayerShip(x, y, scale, rotation) {
         if (keyboardState.isKeyPressed(keyboardState.key.D) && this.x < viewWidth) this.dx = this.speed;
         if (keyboardState.isKeyPressed(keyboardState.key.S) && this.y < viewHeight) this.dy = this.speed;
         if (keyboardState.isKeyPressed(keyboardState.key.W) && this.y > viewHeight * 0.6) this.dy = -this.speed;
+        if (isMouseClicked) {
+            this.dx = mouseX - this.x;
+            this.dy = mouseY - this.y;
+        }
+        if (this.dx > this.speed) this.dx = this.speed;
+        if (this.dx < -this.speed) this.dx = -this.speed;
+        if (this.dy > this.speed) this.dy = this.speed;
+        if (this.dy < -this.speed) this.dy = -this.speed;
         this.x += this.dx;
         this.y += this.dy;
 
-        if (keyboardState.isKeyPressed(keyboardState.key.Space) && this.weaponCooldownCounter <= 0) {
-            this.weaponCooldownCounter = this.weaponCooldown;
-            sprites.push(new PlayerMissile(this.x, this.y - 32, this.bulletSpeed, this.bulletDamage));
-            AddToScore("Shots Fired", 1);
+        if (keyboardState.isKeyPressed(keyboardState.key.Space) || isMouseClicked) {
+            if (this.weaponCooldownCounter <= 0) {
+                this.weaponCooldownCounter = this.weaponCooldown;
+                sprites.push(new PlayerMissile(this.x, this.y - 32, this.bulletSpeed, this.bulletDamage));
+                AddToScore("Shots Fired", 1);
+            }
         }
 
         if (this.shield.HP > 0) this.shield.applyHealth(this.shieldRechargeRate, true);

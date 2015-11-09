@@ -82,7 +82,7 @@ function handleShopping() {
     if (currentShoppingState == shoppingStates.scoreDisplay) {
         shoppingTimer += 1;
         DrawScores(0, 0);
-        if (keyboardState.isKeyPressed(keyboardState.key.Space)) {
+        if (isMouseClicked || keyboardState.isKeyPressed(keyboardState.key.Space)) {
             shoppingTimer = 0;
             currentShoppingState = shoppingStates.endingScoreDisplay;
         }
@@ -141,7 +141,7 @@ function getUpgradeTypes() {
     var originalBulletSpeed = 6;
     var bulletSpeedLevel = parseInt((player.bulletSpeed - originalBulletSpeed) / bulletSpeedIncreasePerLevel);
     ret.push({
-        name: "Faster projectile speed",
+        name: "Faster projectiles",
         frame: new Frame(graphicSheets.Upgrades, 5),
         cost: [{ itemtype: itemTypes.MeteorOre, amount: 5 + bulletSpeedLevel * 5 },
                { itemtype: itemTypes.FuelCluster, amount: bulletSpeedLevel * 2 }],

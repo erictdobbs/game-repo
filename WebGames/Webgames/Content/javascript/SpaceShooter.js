@@ -19,7 +19,15 @@ function InitializeGameEngine() {
     initializeItemTypes();
     var gameView = document.getElementById('gameView');
 
-    gameView.addEventListener("mousedown", onMouseClick, false);
+    gameView.addEventListener("mousedown", onMouseDown, false);
+    gameView.addEventListener("mouseup", onMouseUp, false);
+    gameView.addEventListener("mousemove", onMouseMove, false);
+    gameView.addEventListener("touchstart", onMouseDown, false);
+    gameView.addEventListener("touchmove", onMouseMove, false);
+    gameView.addEventListener("touchend", onMouseUp, false);
+    gameView.oncontextmenu = function (e) {
+        e.preventDefault();
+    };
 
     gameView.onmousedown = function (e) {
         e = e || window.event;
@@ -78,18 +86,18 @@ function InitializeGameEngine() {
 
 
 
-var frameTimes = [];
+//var frameTimes = [];
 function pulse() {
     MainDrawLoop();
     cycleMouseInfo();
 
-    frameTimes.push(new Date());
-    if (frameTimes.length > 50) frameTimes.splice(0, 1);
-    var fpsText = "FPS: " + parseInt(1000 * frameTimes.length / (frameTimes[frameTimes.length - 1] - frameTimes[0]));
-    gameViewContext.font = "16px monospace";
-    gameViewContext.fillStyle = "white";
-    gameViewContext.shadowBlur = 0;
-    gameViewContext.fillText(fpsText, 10, 20);
+    //frameTimes.push(new Date());
+    //if (frameTimes.length > 50) frameTimes.splice(0, 1);
+    //var fpsText = "FPS: " + parseInt(1000 * frameTimes.length / (frameTimes[frameTimes.length - 1] - frameTimes[0]));
+    //gameViewContext.font = "16px monospace";
+    //gameViewContext.fillStyle = "white";
+    //gameViewContext.shadowBlur = 0;
+    //gameViewContext.fillText(fpsText, 10, 20);
 }
 
 function cycleMouseInfo() {

@@ -222,7 +222,7 @@ function WaveFleet(level, levelNumber, waveNumber) {
         }
     }
 
-    WaveBase.call(this, level, "Pixalien Fleet " + GetWaveSuffix(levelNumber, waveNumber), waveEvents);
+    WaveBase.call(this, level, "Pixelien Fleet " + GetWaveSuffix(levelNumber, waveNumber), waveEvents);
 }
 WaveFleet.prototype = new WaveBase();
 WaveFleet.prototype.constructor = WaveFleet;

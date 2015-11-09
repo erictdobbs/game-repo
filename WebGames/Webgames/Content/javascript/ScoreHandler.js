@@ -105,5 +105,5 @@ function DrawScores(x, y, titleText) {
     }
     gameViewContext.font = scoreFont;
     gameViewContext.fillStyle = scoreColor;
-    if (titleText != "GAME OVER") gameViewContext.fillText("Space to continue", x + margin, drawY + rowHeight * 2);
+    if (titleText != "GAME OVER") gameViewContext.fillText("Space/click to continue", x + margin, drawY + rowHeight * 2);
 }
