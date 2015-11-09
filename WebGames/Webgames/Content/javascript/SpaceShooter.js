@@ -77,7 +77,6 @@ function InitializeGameEngine() {
 
 
 
-
 var frameTimes = [];
 function pulse() {
     MainDrawLoop();
